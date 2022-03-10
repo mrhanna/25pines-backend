@@ -47,4 +47,20 @@ class Series extends AbstractContent
 
         return $this;
     }
+
+    // API Helper Methods
+
+    public function toArray(): ?array
+    {
+        $toReturn = parent::toArray();
+
+        if ($this->episodes) {
+            $toReturn['episodes'] = array_map(
+                fn(Episode $episode) => $episode->toConciseArray(),
+                $this->episodes->toArray()
+            );
+        }
+
+        return $toReturn;
+    }
 }

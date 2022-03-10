@@ -52,4 +52,29 @@ class Episode extends StreamableContent
 
         return $this;
     }
+
+    //API Helper Methods
+
+    public function toConciseArray(): ?array
+    {
+        $toReturn = array_merge(parent::toConciseArray(), [
+            'seasonNumber' => $this->seasonNumber,
+            'episodeNumber' => $this->episodeNumber
+        ]);
+
+        return $toReturn;
+    }
+
+    public function toArray(): ?array
+    {
+        $toReturn = array_merge(parent::toArray(), [
+            'seasonNumber' => $this->seasonNumber,
+            'episodeNumber' => $this->episodeNumber
+        ]);
+
+        if ($this->series)
+            $toReturn['series'] = $this->series->toConciseArray();
+
+        return $toReturn;
+    }
 }

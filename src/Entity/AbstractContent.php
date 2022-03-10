@@ -17,7 +17,9 @@ abstract class AbstractContent
     #[ORM\Column(type: 'integer')]
     protected $id;
 
-    #[ORM\Column(type: 'uuid')]
+    #[ORM\Column(type: 'uuid', unique: true)]
+    #[ORM\GeneratedValue(strategy: 'CUSTOM')]
+    #[ORM\CustomIdGenerator('doctrine.uuid_generator')]
     protected $uuid;
 
     #[ORM\Column(type: 'string', length: 50)]
@@ -26,7 +28,7 @@ abstract class AbstractContent
     #[ORM\Column(type: 'string', length: 100)]
     protected $thumbnail;
 
-    #[ORM\Column(type: 'date')]
+    #[ORM\Column(type: 'date', nullable: true)]
     protected $releaseDate;
 
     #[ORM\Column(type: 'string', length: 200, nullable: true)]
@@ -38,8 +40,14 @@ abstract class AbstractContent
     #[ORM\ManyToMany(targetEntity: Tag::class, mappedBy: 'content')]
     protected $tags;
 
-    #[ORM\Column(type: 'datetimetz')]
-    private $dateAdded;
+    #[ORM\Column(type: 'datetimetz', nullable: true)]
+    protected $dateAdded;
+
+    #[ORM\Column(type: 'simple_array', nullable: true)]
+    protected $genres = [];
+
+    #[ORM\Column(type: 'string', length: 14)]
+    protected $mediaType;
 
     public function __construct()
     {
@@ -160,5 +168,58 @@ abstract class AbstractContent
         $this->dateAdded = $dateAdded;
 
         return $this;
+    }
+
+    public function getGenres(): ?array
+    {
+        return $this->genres;
+    }
+
+    public function setGenres(?array $genres): self
+    {
+        $this->genres = $genres;
+
+        return $this;
+    }
+
+    public function getMediaType(): ?string
+    {
+        return $this->mediaType;
+    }
+
+    public function setMediaType(string $mediaType): self
+    {
+        $this->mediaType = $mediaType;
+
+        return $this;
+    }
+
+    // API Helper Methods
+    public function toConciseArray(): ?array
+    {
+        $toReturn = array(
+            'uuid' => $this->uuid,
+            'mediaType' => $this->mediaType,
+            'title' => $this->title
+        );
+
+        return $toReturn;
+    }
+
+    public function toArray(): ?array
+    {
+        $tags = array_map(fn(Tag $tag) => $tag->getName(), $this->tags->toArray());
+
+        $toReturn = array_merge($this->toConciseArray(), array(
+            'shortDescription' => $this->shortDescription,
+            'longDescription' => $this->longDescription,
+            'releaseDate' => $this->releaseDate,
+            'genres' => $this->genres,
+            'thumbnail' => $this->thumbnail,
+            'dateAdded' => $this->dateAdded,
+            'tags' => $tags,
+        ));
+
+        return $toReturn;
     }
 }

@@ -77,4 +77,16 @@ class Video
 
         return $this;
     }
+
+
+
+    public function toArray(): ?array
+    {
+        return [
+                'url' => $this->url,
+                'quality' => $this->quality,
+                'videoType' => $this->videoType
+        ];
+    }
+
 }

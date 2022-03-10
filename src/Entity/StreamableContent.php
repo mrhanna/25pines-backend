@@ -14,10 +14,10 @@ class StreamableContent extends AbstractContent
     protected $videos;
 
     #[ORM\Column(type: 'integer', nullable: true)]
-    private $duration;
+    protected $duration;
 
     #[ORM\Column(type: 'string', length: 5, nullable: true)]
-    private $language;
+    protected $language;
 
     public function __construct()
     {
@@ -76,5 +76,19 @@ class StreamableContent extends AbstractContent
         $this->language = $language;
 
         return $this;
+    }
+
+    // API Helper Methods
+    public function toArray(): ?array
+    {
+        $videos = array_map(fn(Video $video) => $video->toArray(), $this->videos->toArray());
+
+        $toReturn = array_merge(parent::toArray(), [
+            'duration' => $this->duration,
+            'language' => $this->language,
+            'videos' => $videos
+        ]);
+
+        return $toReturn;
     }
 }
