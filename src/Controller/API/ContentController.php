@@ -10,6 +10,7 @@ use Doctrine\Persistence\ManagerRegistry;
 
 use App\Entity\AbstractContent;
 use App\Repository\AbstractContentRepository;
+use App\Entity\Factory\ContentFactory;
 
 class ContentController extends AbstractController
 {
@@ -20,30 +21,19 @@ class ContentController extends AbstractController
           return $this->json($contentEntity->toArray());
     }
 
-    /*#[Route('/content', name: 'addContent', methods: ['POST'])]
+    #[Route('/content', name: 'addContent', methods: ['POST'])]
     public function addContent(ManagerRegistry $doctrine, Request $request): Response
     {
         $entityManager = $doctrine->getManager();
 
-        $guid = Uuid::v4();
-
-        $content = new Content();
-        $content->setGuid($guid)
-            ->setTitle($request->request->get('title'))
-            ->setGenres($request->request->get('genres'))
-            ->setThumbnail($request->request->get('thumbnail'))
-            ->setReleaseDate(new \DateTime($request->request->get('releaseDate')))
-            ->setDateAdded(new \DateTime($request->request->get('dateAdded')))
-            ->setShortDescription($request->request->get('shortDescription'))
-            ->setLongDescription($request->request->get('longDescription'))
-            ->setMediaType($request->request->get('mediaType'))
-            ->setDuration($request->request->get('duration'))
-            ->setLanguage('en-US');
+        $content = ContentFactory::createFromArray($request->request->all());
 
         $entityManager->persist($content);
         $entityManager->flush();
 
 
-        return $this->redirectToRoute('showContent', ['guid' => $guid], 201);
-    }*/
+        return $this->redirectToRoute('showContent', ['uuid' => $content->getUuid()], 201);
+
+        //return $this->json($content->toArray());
+    }
 }

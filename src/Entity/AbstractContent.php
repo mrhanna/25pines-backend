@@ -7,6 +7,8 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
+use Symfony\Component\Uid\Uuid;
+
 #[ORM\Entity(repositoryClass: AbstractContentRepository::class)]
 #[ORM\InheritanceType("SINGLE_TABLE")]
 #[ORM\DiscriminatorColumn(name: "discr", type: "string")]
@@ -18,8 +20,6 @@ abstract class AbstractContent
     protected $id;
 
     #[ORM\Column(type: 'uuid', unique: true)]
-    #[ORM\GeneratedValue(strategy: 'CUSTOM')]
-    #[ORM\CustomIdGenerator('doctrine.uuid_generator')]
     protected $uuid;
 
     #[ORM\Column(type: 'string', length: 50)]
@@ -52,6 +52,7 @@ abstract class AbstractContent
     public function __construct()
     {
         $this->tags = new ArrayCollection();
+        $this->uuid = Uuid::v4();
     }
 
     public function getId(): ?int
@@ -100,9 +101,12 @@ abstract class AbstractContent
         return $this->releaseDate;
     }
 
-    public function setReleaseDate(\DateTimeInterface $releaseDate): self
+    public function setReleaseDate($releaseDate): self
     {
-        $this->releaseDate = $releaseDate;
+        if (is_string($releaseDate))
+            $this->releaseDate = new \DateTimeImmutable($releaseDate);
+        else if ($releaseDate instanceof \DateTimeInterface)
+            $this->releaseDate = $releaseDate;
 
         return $this;
     }
@@ -163,9 +167,12 @@ abstract class AbstractContent
         return $this->dateAdded;
     }
 
-    public function setDateAdded(\DateTimeInterface $dateAdded): self
+    public function setDateAdded($dateAdded): self
     {
-        $this->dateAdded = $dateAdded;
+        if (is_string($dateAdded))
+            $this->dateAdded = new \DateTimeImmutable($dateAdded);
+        else if ($dateAdded instanceof \DateTimeInterface)
+            $this->dateAdded = $dateAdded;
 
         return $this;
     }
@@ -213,13 +220,34 @@ abstract class AbstractContent
         $toReturn = array_merge($this->toConciseArray(), array(
             'shortDescription' => $this->shortDescription,
             'longDescription' => $this->longDescription,
-            'releaseDate' => $this->releaseDate,
+            'releaseDate' => $this->releaseDate->format(\DateTimeInterface::ISO8601),
             'genres' => $this->genres,
             'thumbnail' => $this->thumbnail,
-            'dateAdded' => $this->dateAdded,
+            'dateAdded' => $this->dateAdded->format(\DateTimeInterface::ISO8601),
             'tags' => $tags,
         ));
 
         return $toReturn;
+    }
+
+    public function setByArray(array $args): self
+    {
+        $settable = [
+            'title',
+            'thumbnail',
+            'releaseDate',
+            'shortDescription',
+            'longDescription',
+            'dateAdded'
+        ];
+
+        foreach ($settable as $var) {
+            if (isset($args[$var])) {
+                $func = 'set'.ucfirst($var);
+                $this->$func($args[$var]);
+            }
+        }
+
+        return $this;
     }
 }

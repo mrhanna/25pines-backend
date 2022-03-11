@@ -15,7 +15,9 @@ class Series extends AbstractContent
 
     public function __construct()
     {
+        parent::__construct();
         $this->episodes = new ArrayCollection();
+        $this->mediaType = 'series';
     }
 
     /**

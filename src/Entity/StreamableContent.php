@@ -21,7 +21,9 @@ class StreamableContent extends AbstractContent
 
     public function __construct()
     {
+        parent::__construct();
         $this->videos = new ArrayCollection();
+        $this->language = 'en-US';
     }
 
     /**
@@ -90,5 +92,24 @@ class StreamableContent extends AbstractContent
         ]);
 
         return $toReturn;
+    }
+
+    public function setByArray(array $args): self
+    {
+        parent::setByArray($args);
+
+        $settable = [
+            'duration',
+            'language'
+        ];
+
+        foreach ($settable as $var) {
+            if (isset($args[$var])) {
+                $func = 'set'.ucfirst($var);
+                $this->$func($args[$var]);
+            }
+        }
+
+        return $this;
     }
 }

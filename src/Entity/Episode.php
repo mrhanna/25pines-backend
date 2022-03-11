@@ -17,6 +17,12 @@ class Episode extends StreamableContent
     #[ORM\ManyToOne(targetEntity: Series::class, inversedBy: 'episodes')]
     private $series;
 
+    public function __construct()
+    {
+        parent::__construct();
+        $this->mediaType = 'episode';
+    }
+
     public function getSeasonNumber(): ?int
     {
         return $this->seasonNumber;
@@ -76,5 +82,24 @@ class Episode extends StreamableContent
             $toReturn['series'] = $this->series->toConciseArray();
 
         return $toReturn;
+    }
+
+    public function setByArray(array $args): self
+    {
+        parent::setByArray($args);
+
+        $settable = [
+            'seasonNumber',
+            'episodeNumber'
+        ];
+
+        foreach ($settable as $var) {
+            if (isset($args[$var])) {
+                $func = 'set'.ucfirst($var);
+                $this->$func($args[$var]);
+            }
+        }
+
+        return $this;
     }
 }
