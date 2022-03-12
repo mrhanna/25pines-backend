@@ -81,14 +81,14 @@ class StreamableContent extends AbstractContent
     }
 
     // API Helper Methods
-    public function toArray(): ?array
+    public function jsonSerialize(): ?array
     {
-        $videos = array_map(fn(Video $video) => $video->toArray(), $this->videos->toArray());
+        //$videos = array_map(fn(Video $video) => $video->toArray(), $this->videos->toArray());
 
-        $toReturn = array_merge(parent::toArray(), [
+        $toReturn = array_merge(parent::jsonSerialize(), [
             'duration' => $this->duration,
             'language' => $this->language,
-            'videos' => $videos
+            //'videos' => $videos
         ]);
 
         return $toReturn;

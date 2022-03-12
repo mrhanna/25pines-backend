@@ -9,10 +9,12 @@ use Doctrine\ORM\Mapping as ORM;
 
 use Symfony\Component\Uid\Uuid;
 
+use App\Utility\ConciseSerializable;
+
 #[ORM\Entity(repositoryClass: AbstractContentRepository::class)]
 #[ORM\InheritanceType("SINGLE_TABLE")]
 #[ORM\DiscriminatorColumn(name: "discr", type: "string")]
-abstract class AbstractContent
+abstract class AbstractContent implements ConciseSerializable
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -202,7 +204,7 @@ abstract class AbstractContent
     }
 
     // API Helper Methods
-    public function toConciseArray(): ?array
+    public function conciseSerialize(): ?array
     {
         $toReturn = array(
             'uuid' => $this->uuid,
@@ -213,11 +215,11 @@ abstract class AbstractContent
         return $toReturn;
     }
 
-    public function toArray(): ?array
+    public function jsonSerialize(): ?array
     {
         $tags = array_map(fn(Tag $tag) => $tag->getName(), $this->tags->toArray());
 
-        $toReturn = array_merge($this->toConciseArray(), array(
+        $toReturn = array_merge($this->conciseSerialize(), array(
             'shortDescription' => $this->shortDescription,
             'longDescription' => $this->longDescription,
             'releaseDate' => $this->releaseDate->format(\DateTimeInterface::ISO8601),

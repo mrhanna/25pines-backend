@@ -61,25 +61,31 @@ class Episode extends StreamableContent
 
     //API Helper Methods
 
-    public function toConciseArray(): ?array
+    public function conciseSerialize(): ?array
     {
-        $toReturn = array_merge(parent::toConciseArray(), [
-            'seasonNumber' => $this->seasonNumber,
-            'episodeNumber' => $this->episodeNumber
-        ]);
+        $toReturn = parent::conciseSerialize();
+
+        $toReturn['episodeNumber'] = $this->episodeNumber;
+        if (!is_null($this->seasonNumber)) {
+            $toReturn['seasonNumber'] = $this->seasonNumber;
+        }
 
         return $toReturn;
     }
 
-    public function toArray(): ?array
+    public function jsonSerialize(): ?array
     {
-        $toReturn = array_merge(parent::toArray(), [
-            'seasonNumber' => $this->seasonNumber,
-            'episodeNumber' => $this->episodeNumber
-        ]);
+        $toReturn = parent::jsonSerialize();
 
+        $toReturn['episodeNumber'] = $this->episodeNumber;
+        if (!is_null($this->seasonNumber)) {
+            $toReturn['seasonNumber'] = $this->seasonNumber;
+        }
+
+        /*
         if ($this->series)
             $toReturn['series'] = $this->series->toConciseArray();
+        */
 
         return $toReturn;
     }

@@ -50,19 +50,32 @@ class Series extends AbstractContent
         return $this;
     }
 
+    public function episodeCount(): ?int
+    {
+        return $this->episodes->count();
+    }
+
     // API Helper Methods
 
-    public function toArray(): ?array
+    public function conciseSerialize(): ?array
     {
-        $toReturn = parent::toArray();
+        return array_merge(
+            parent::conciseSerialize(),
+            ['episodeCount' => $this->episodeCount()]
+        );
+    }
 
-        if ($this->episodes) {
-            $toReturn['episodes'] = array_map(
-                fn(Episode $episode) => $episode->toConciseArray(),
-                $this->episodes->toArray()
-            );
-        }
+    public function jsonSerialize(): ?array
+    {
+        return array_merge(
+            parent::jsonSerialize(),
+            ['episodeCount' => $this->episodeCount()]
+        );
 
-        return $toReturn;
+        /*
+        $toReturn['episodes'] = array_map(
+            fn(Episode $episode) => $episode->toConciseArray(),
+            $this->episodes->toArray()
+        );*/
     }
 }

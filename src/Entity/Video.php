@@ -6,7 +6,7 @@ use App\Repository\VideoRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: VideoRepository::class)]
-class Video
+class Video implements \JsonSerializable
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -78,14 +78,13 @@ class Video
         return $this;
     }
 
-
-
-    public function toArray(): ?array
+    public function jsonSerialize(): ?array
     {
         return [
-                'url' => $this->url,
-                'quality' => $this->quality,
-                'videoType' => $this->videoType
+            'id' => $this->id,
+            'url' => $this->url,
+            'quality' => $this->quality,
+            'videoType' => $this->videoType
         ];
     }
 
