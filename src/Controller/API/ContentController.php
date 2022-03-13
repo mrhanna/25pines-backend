@@ -40,7 +40,7 @@ class ContentController extends AbstractController
     public function showContent(AbstractContentRepository $contentRepo, HalJsonFactory $hjf, $uuid): Response
     {
           $contentEntity = $contentRepo->findOneBy(['uuid' => $uuid]);
-          $json = $hjf->create($contentEntity, $this);
+          $json = $hjf->create($contentEntity);
 
           return $this->json($json);
     }
