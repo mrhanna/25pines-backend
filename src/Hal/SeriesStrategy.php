@@ -10,7 +10,7 @@ class SeriesStrategy implements HalStrategy
 {
     public static function full() {
         return function(HalJson &$hj, $s) {
-            $hj->link('episodes', $this->router->generate('showSeriesEpisodes', ['uuid' => $s->getUuid()]));
+            $hj->link('episodes', $this->generateUrl('showSeriesEpisodes', ['uuid' => $s->getUuid()]));
 
             $episodes = $s->getEpisodes();
 
@@ -22,6 +22,6 @@ class SeriesStrategy implements HalStrategy
     }
 
     public static function concise() {
-        
+
     }
 }

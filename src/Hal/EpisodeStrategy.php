@@ -12,10 +12,10 @@ class EpisodeStrategy implements HalStrategy
         return function(HalJson &$hj, $ep) {
             $series = $ep->getSeries();
             $seriesJson = $this->createConcise($series);
-            $seriesUrl = $this->router->generate('showContent', ['uuid' => $series->getUuid()]);
+            $seriesUrl = $this->generateUrl('showContent', ['uuid' => $series->getUuid()]);
             $hj->link('series', $seriesUrl);
             $hj->embed('series', $seriesJson);
-            $hj->link('self', $this->router->generate('showContent', ['uuid' => $ep->getUuid()]));
+            $hj->link('self', $this->generateUrl('showContent', ['uuid' => $ep->getUuid()]));
         };
     }
 

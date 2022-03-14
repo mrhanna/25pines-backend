@@ -10,7 +10,7 @@ class AbstractContentStrategy implements HalStrategy
 {
     public static function full() {
         return function(HalJson &$hj, $ac) {
-            $hj->link('self', $this->router->generate('showContent', ['uuid' => $ac->getUuid()]));
+            $hj->link('self', $this->generateUrl('showContent', ['uuid' => $ac->getUuid()]));
         };
     }
 

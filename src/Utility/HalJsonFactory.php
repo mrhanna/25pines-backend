@@ -51,18 +51,28 @@ class HalJsonFactory
         return $hj;
     }
 
-    private function setupAbstractContent(HalJson &$hj, AbstractContent $ac): void
+    public function mapCreate(Iterable $objs): array
     {
-        $hj->link('self', $this->router->generate('showContent', ['uuid' => $ac->getUuid()]));
+        $return = [];
+        foreach ($objs as $obj) {
+            $return[] = $this->create($obj);
+        }
+
+        return $return;
     }
 
-    private function setupStreamableContent(HalJson &$hj, StreamableContent $sc): void
+    public function mapCreateConcise(Iterable $objs): array
     {
-        $videos = $sc->getVideos();
-
-        foreach ($videos as $video) {
-            $videoJson = new HalJson($video->jsonSerialize());
-            $hj->embedPush('videos', $videoJson);
+        $return = [];
+        foreach ($objs as $obj) {
+            $return[] = $this->createConcise($obj);
         }
+
+        return $return;
+    }
+
+    private function generateUrl(string $name, array $args): string
+    {
+        return $this->router->generate($name, $args, UrlGeneratorInterface::ABSOLUTE_URL);
     }
 }
