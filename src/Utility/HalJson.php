@@ -34,6 +34,12 @@ class HalJson implements \JsonSerializable
         return $this;
     }
 
+    public function embedArray(string $name, array $jsons): self
+    {
+        $this->embedded[$name] = $jsons;
+        return $this;
+    }
+
     public function set(string $key, $val): self
     {
         if ($key == '_links' || $key == '_embedded') {

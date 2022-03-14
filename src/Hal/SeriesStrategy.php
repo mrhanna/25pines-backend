@@ -10,18 +10,19 @@ class SeriesStrategy implements HalStrategy
 {
     public static function full() {
         return function(HalJson &$hj, $s) {
+            $hj->link('self', $this->generateUrl('showSeries', ['uuid' => $s->getUuid()]));
+            $hj->link('collections', $this->generateUrl('showAllSeries'));
             $hj->link('episodes', $this->generateUrl('showSeriesEpisodes', ['uuid' => $s->getUuid()]));
 
             $episodes = $s->getEpisodes();
-
-            foreach ($episodes as $episode) {
-                $epJson = $this->createConcise($episode);
-                $hj->embedPush('episodes', $epJson);
-            }
+            $epJsons = $this->mapCreateConcise($episodes);
+            $hj->embedArray('episodes', $epJsons);
         };
     }
 
     public static function concise() {
-
+        return function(HalJson &$hj, $s) {
+            $hj->link('self', $this->generateUrl('showSeries', ['uuid' => $s->getUuid()]));
+        };
     }
 }

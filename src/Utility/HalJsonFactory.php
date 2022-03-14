@@ -20,6 +20,7 @@ class HalJsonFactory
             \App\Entity\Episode::class => \App\Hal\EpisodeStrategy::class,
             \App\Entity\Series::class => \App\Hal\SeriesStrategy::class,
             \App\Entity\StreamableContent::class => \App\Hal\StreamableContentStrategy::class,
+            \App\Entity\Video::class => \App\Hal\VideoStrategy::class,
         ];
     }
 
@@ -37,9 +38,12 @@ class HalJsonFactory
         return $hj;
     }
 
-    public function createConcise(ConciseSerializable $obj): HalJson
+    public function createConcise(\JsonSerializable $obj): HalJson
     {
-        $hj = new HalJson($obj->conciseSerialize());
+        $hj = new HalJson();
+
+        if ($obj instanceof ConciseSerializable) $hj->setArray($obj->conciseSerialize());
+        else $hj->setArray($obj->jsonSerialize());
 
         foreach($this->registry as $class => $strategy) {
             if ($obj instanceof $class) {
@@ -71,7 +75,14 @@ class HalJsonFactory
         return $return;
     }
 
-    private function generateUrl(string $name, array $args): string
+    public function createCollection(string $name, Iterable $objs): HalJson
+    {
+        $hj = new HalJson();
+        $hj->embedArray($name, $this->mapCreateConcise($objs));
+        return $hj;
+    }
+
+    private function generateUrl(string $name, array $args = []): string
     {
         return $this->router->generate($name, $args, UrlGeneratorInterface::ABSOLUTE_URL);
     }

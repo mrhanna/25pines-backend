@@ -207,7 +207,7 @@ abstract class AbstractContent implements ConciseSerializable
     public function conciseSerialize(): ?array
     {
         $toReturn = array(
-            'uuid' => $this->uuid,
+            //'uuid' => $this->uuid,
             'mediaType' => $this->mediaType,
             'title' => $this->title
         );

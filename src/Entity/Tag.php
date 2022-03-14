@@ -15,7 +15,7 @@ class Tag
     #[ORM\Column(type: 'integer')]
     private $id;
 
-    #[ORM\Column(type: 'string', length: 20)]
+    #[ORM\Column(type: 'string', length: 20, unique: true)]
     private $name;
 
     #[ORM\ManyToMany(targetEntity: AbstractContent::class, inversedBy: 'tags')]

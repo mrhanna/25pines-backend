@@ -13,9 +13,11 @@ class StreamableContentStrategy implements HalStrategy
             $videos = $sc->getVideos();
 
             foreach ($videos as $video) {
-                $videoJson = new HalJson($video->jsonSerialize());
+                $videoJson = $this->createConcise($video);
                 $hj->embedPush('videos', $videoJson);
             }
+
+            $hj->link('videos', $this->generateUrl('showContentVideos', ['uuid' => $sc->getUuid()]));
         };
     }
 

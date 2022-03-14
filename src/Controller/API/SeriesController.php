@@ -2,12 +2,11 @@
 
 namespace App\Controller\API;
 
+use App\Repository\SeriesRepository;
+use App\Utility\HalJsonFactory;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use App\Entity\Series;
-use App\Repository\SeriesRepository;
-use App\Utility\HalJsonFactory;
 
 class SeriesController extends AbstractController
 {
@@ -15,7 +14,9 @@ class SeriesController extends AbstractController
     public function showAllSeries(SeriesRepository $repo, HalJsonFactory $hjf): Response
     {
         $series = $repo->findAll();
-        $collection = $hjf->mapCreateConcise($series);
+        $collection = $hjf->createCollection('series', $series)
+            ->link('self', $this->generateUrl('showAllSeries', [], 0));
+
         return $this->json($collection);
     }
 
@@ -30,7 +31,8 @@ class SeriesController extends AbstractController
     public function showSeriesEpisodes(SeriesRepository $repo, HalJsonFactory $hjf, string $uuid): Response
     {
         $series = $repo->findOneBy(['uuid' => $uuid]);
-        $json = $hjf->mapCreateConcise($series->getEpisodes());
-        return $this->json($json);
+        $collection = $hjf->createCollection('episodes', $series->getEpisodes())
+            ->link('self', $this->generateUrl('showSeriesEpisodes', ['uuid' => $uuid], 0));
+        return $this->json($collection);
     }
 }

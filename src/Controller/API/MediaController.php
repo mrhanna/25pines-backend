@@ -8,12 +8,8 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Doctrine\Persistence\ManagerRegistry;
 
-use App\Entity\AbstractContent;
-use App\Entity\Episode;
-use App\Entity\Series;
-use App\Entity\Factory\ContentFactory;
 use App\Repository\AbstractContentRepository;
-use App\Repository\SeriesRepository;
+use App\Utility\ContentFactory;
 use App\Utility\HalJsonFactory;
 
 class MediaController extends AbstractController
@@ -36,12 +32,14 @@ class MediaController extends AbstractController
           return $this->json($json);
     }
 
+
+
     #[Route('/media', name: 'addContent', methods: ['POST'])]
-    public function addContent(ManagerRegistry $doctrine, Request $request): Response
+    public function addContent(ManagerRegistry $doctrine, ContentFactory $cf, Request $request): Response
     {
         $entityManager = $doctrine->getManager();
 
-        $content = ContentFactory::createFromArray($request->request->all());
+        $content = $cf->createFromArray($request->request->all());
 
         $entityManager->persist($content);
         $entityManager->flush();
