@@ -8,17 +8,20 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Doctrine\Persistence\ManagerRegistry;
 
+use App\Repository\StreamableContentRepository;
 use App\Repository\AbstractContentRepository;
 use App\Utility\ContentFactory;
+use App\Utility\HalJson;
 use App\Utility\HalJsonFactory;
 
 class MediaController extends AbstractController
 {
     #[Route('/media', name: 'showAllContent', methods: ['GET'])]
-    public function showAllContent(AbstractContentRepository $contentRepo, HalJsonFactory $hjf): Response
+    public function showAllContent(StreamableContentRepository $repo, HalJsonFactory $hjf): Response
     {
-        $contents = $contentRepo->findAll();
-        $collection = $hjf->mapCreateConcise($contents);
+        $content = $repo->findAll();
+        $collection = $hjf->createCollection('media', $content)
+            ->link('self', $this->generateUrl('showAllContent', [], 0));
 
         return $this->json($collection);
     }
