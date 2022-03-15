@@ -6,7 +6,7 @@ use App\Repository\EpisodeRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: EpisodeRepository::class)]
-class Episode extends StreamableContent
+class Episode extends AbstractStreamableContent
 {
     #[ORM\Column(type: 'smallint', nullable: true)]
     private $seasonNumber;

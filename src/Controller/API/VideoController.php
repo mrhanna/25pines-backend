@@ -2,7 +2,7 @@
 
 namespace App\Controller\API;
 
-use App\Repository\StreamableContentRepository;
+use App\Repository\AbstractStreamableContentRepository;
 use App\Repository\VideoRepository;
 use App\Utility\HalJsonFactory;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -12,7 +12,7 @@ use Symfony\Component\Routing\Annotation\Route;
 class VideoController extends AbstractController
 {
     #[Route('media/{uuid}/videos', name: 'showContentVideos', methods: ['GET'])]
-    public function showContentVideos(StreamableContentRepository $repo, HalJsonFactory $hjf, $uuid): Response
+    public function showContentVideos(AbstractStreamableContentRepository $repo, HalJsonFactory $hjf, $uuid): Response
     {
         $content = $repo->findOneBy(['uuid' => $uuid]);
         $json = $hjf->createCollection('videos', $content->getVideos())

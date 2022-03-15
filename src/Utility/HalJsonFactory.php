@@ -21,7 +21,7 @@ class HalJsonFactory
             \App\Entity\AbstractContent::class => Strategies\AbstractContentStrategy::class,
             \App\Entity\Episode::class => Strategies\EpisodeStrategy::class,
             \App\Entity\Series::class => Strategies\SeriesStrategy::class,
-            \App\Entity\StreamableContent::class => Strategies\StreamableContentStrategy::class,
+            \App\Entity\AbstractStreamableContent::class => Strategies\AbstractStreamableContentStrategy::class,
             \App\Entity\Video::class => Strategies\VideoStrategy::class,
         ];
     }
@@ -36,7 +36,7 @@ class HalJsonFactory
                 if (!is_null($fn)) $fn($hj, $obj);
             }
         }
-        
+
         return $hj;
     }
 

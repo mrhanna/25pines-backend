@@ -22,7 +22,7 @@ class Video implements \JsonSerializable
     #[ORM\Column(type: 'string', length: 6)]
     private $videoType;
 
-    #[ORM\ManyToOne(targetEntity: StreamableContent::class, inversedBy: 'videos')]
+    #[ORM\ManyToOne(targetEntity: AbstractStreamableContent::class, inversedBy: 'videos')]
     private $content;
 
     public function getId(): ?int
@@ -66,12 +66,12 @@ class Video implements \JsonSerializable
         return $this;
     }
 
-    public function getContent(): ?StreamableContent
+    public function getContent(): ?AbstractStreamableContent
     {
         return $this->content;
     }
 
-    public function setContent(?StreamableContent $content): self
+    public function setContent(?AbstractStreamableContent $content): self
     {
         $this->content = $content;
 
