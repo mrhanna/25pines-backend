@@ -16,15 +16,16 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class AbstractContentRepository extends ServiceEntityRepository
 {
-    public function __construct(ManagerRegistry $registry)
+    public function __construct(ManagerRegistry $registry, string $fqcn = AbstractContent::class)
     {
-        parent::__construct($registry, AbstractContent::class);
+        parent::__construct($registry, $fqcn);
     }
 
-    /**
-     * @throws ORMException
-     * @throws OptimisticLockException
-     */
+    // /**
+    //  * @throws ORMException
+    //  * @throws OptimisticLockException
+    //  */
+    /*
     public function add(AbstractContent $entity, bool $flush = true): void
     {
         $this->_em->persist($entity);
@@ -32,11 +33,13 @@ class AbstractContentRepository extends ServiceEntityRepository
             $this->_em->flush();
         }
     }
+    */
 
-    /**
-     * @throws ORMException
-     * @throws OptimisticLockException
-     */
+    // /**
+    //  * @throws ORMException
+    //  * @throws OptimisticLockException
+    //  */
+    /*
     public function remove(AbstractContent $entity, bool $flush = true): void
     {
         $this->_em->remove($entity);
@@ -44,6 +47,7 @@ class AbstractContentRepository extends ServiceEntityRepository
             $this->_em->flush();
         }
     }
+    */
 
     // /**
     //  * @return AbstractContent[] Returns an array of AbstractContent objects

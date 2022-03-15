@@ -3,7 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Series;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use App\Repository\AbstractContentRepository;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Doctrine\Persistence\ManagerRegistry;
@@ -14,7 +14,7 @@ use Doctrine\Persistence\ManagerRegistry;
  * @method Series[]    findAll()
  * @method Series[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
-class SeriesRepository extends ServiceEntityRepository
+class SeriesRepository extends AbstractContentRepository
 {
     public function __construct(ManagerRegistry $registry)
     {

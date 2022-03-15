@@ -3,7 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\AbstractStreamableContent;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use App\Repository\AbstractContentRepository;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Doctrine\Persistence\ManagerRegistry;
@@ -14,36 +14,40 @@ use Doctrine\Persistence\ManagerRegistry;
  * @method AbstractStreamableContent[]    findAll()
  * @method AbstractStreamableContent[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
-class AbstractStreamableContentRepository extends ServiceEntityRepository
+class AbstractStreamableContentRepository extends AbstractContentRepository
 {
-    public function __construct(ManagerRegistry $registry)
+    public function __construct(ManagerRegistry $registry, string $fqcn = AbstractStreamableContent::class)
     {
-        parent::__construct($registry, AbstractStreamableContent::class);
+        parent::__construct($registry, $fqcn);
     }
 
-    /**
-     * @throws ORMException
-     * @throws OptimisticLockException
-     */
-    public function add(AbstractStreamableContent $entity, bool $flush = true): void
+    // /**
+    //  * @throws ORMException
+    //  * @throws OptimisticLockException
+    //  */
+    /*
+    public function add(StreamableAbstractContent $entity, bool $flush = true): void
     {
         $this->_em->persist($entity);
         if ($flush) {
             $this->_em->flush();
         }
     }
+    */
 
-    /**
-     * @throws ORMException
-     * @throws OptimisticLockException
-     */
-    public function remove(AbstractStreamableContent $entity, bool $flush = true): void
+    // /**
+    //  * @throws ORMException
+    //  * @throws OptimisticLockException
+    //  */
+    /*
+    public function remove(StreamableAbstractContent $entity, bool $flush = true): void
     {
         $this->_em->remove($entity);
         if ($flush) {
             $this->_em->flush();
         }
     }
+    */
 
     // /**
     //  * @return AbstractStreamableContent[] Returns an array of AbstractStreamableContent objects

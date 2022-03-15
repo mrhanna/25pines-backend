@@ -3,7 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\StreamableContent;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use App\Repository\AbstractStreamableContentRepository;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Doctrine\Persistence\ManagerRegistry;
@@ -14,7 +14,7 @@ use Doctrine\Persistence\ManagerRegistry;
  * @method StreamableContent[]    findAll()
  * @method StreamableContent[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
-class StreamableContentRepository extends ServiceEntityRepository
+class StreamableContentRepository extends AbstractStreamableContentRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
