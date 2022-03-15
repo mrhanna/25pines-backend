@@ -3,6 +3,7 @@
 namespace App\Utility;
 
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use App\Hal as Strategies;
 use App\Utility\HalJsonFactory\AbstractContentStrategy;
 
 class HalJsonFactory
@@ -16,11 +17,12 @@ class HalJsonFactory
 
         // Strategy Registration
         $this->registry = [
-            \App\Entity\AbstractContent::class => \App\Hal\AbstractContentStrategy::class,
-            \App\Entity\Episode::class => \App\Hal\EpisodeStrategy::class,
-            \App\Entity\Series::class => \App\Hal\SeriesStrategy::class,
-            \App\Entity\StreamableContent::class => \App\Hal\StreamableContentStrategy::class,
-            \App\Entity\Video::class => \App\Hal\VideoStrategy::class,
+            \App\Entity\Tag::class => Strategies\TagStrategy::class,
+            \App\Entity\AbstractContent::class => Strategies\AbstractContentStrategy::class,
+            \App\Entity\Episode::class => Strategies\EpisodeStrategy::class,
+            \App\Entity\Series::class => Strategies\SeriesStrategy::class,
+            \App\Entity\StreamableContent::class => Strategies\StreamableContentStrategy::class,
+            \App\Entity\Video::class => Strategies\VideoStrategy::class,
         ];
     }
 
@@ -34,7 +36,7 @@ class HalJsonFactory
                 if (!is_null($fn)) $fn($hj, $obj);
             }
         }
-
+        
         return $hj;
     }
 

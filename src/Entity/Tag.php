@@ -8,7 +8,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: TagRepository::class)]
-class Tag
+class Tag implements \JsonSerializable
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -65,5 +65,9 @@ class Tag
         $this->content->removeElement($content);
 
         return $this;
+    }
+
+    public function jsonSerialize() {
+        return ['name' => $this->name];
     }
 }
