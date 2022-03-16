@@ -5,6 +5,7 @@ namespace App\API\Entity;
 use App\API\Repository\SeriesRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: SeriesRepository::class)]
@@ -25,7 +26,9 @@ class Series extends AbstractContent
      */
     public function getEpisodes(): Collection
     {
-        return $this->episodes;
+        $criteria = Criteria::create()
+            ->orderBy(['seasonNumber' => 'ASC', 'episodeNumber' => 'ASC']);
+        return $this->episodes->matching($criteria);
     }
 
     public function addEpisode(Episode $episode): self

@@ -1,7 +1,12 @@
-controllers:
+api_controllers:
     resource: ../src/API/Controller/
     type: annotation
     prefix: api/
+
+roku_controllers:
+    resource: ../src/RokuDP/
+    type: annotation
+    prefix: roku/
 
 kernel:
     resource: ../src/Kernel.php
