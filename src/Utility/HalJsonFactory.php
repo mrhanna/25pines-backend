@@ -22,6 +22,7 @@ class HalJsonFactory
             \App\Entity\Episode::class => Strategies\EpisodeStrategy::class,
             \App\Entity\Series::class => Strategies\SeriesStrategy::class,
             \App\Entity\AbstractStreamableContent::class => Strategies\AbstractStreamableContentStrategy::class,
+            \App\Entity\StreamableContentStrategy::class => Strategies\StreamableContentStrategy::class,
             \App\Entity\Video::class => Strategies\VideoStrategy::class,
         ];
     }

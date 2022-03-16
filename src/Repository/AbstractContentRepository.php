@@ -49,6 +49,16 @@ class AbstractContentRepository extends ServiceEntityRepository
     }
     */
 
+    public function findAllWithTag(string $tag): array
+    {
+        return $this->createQueryBuilder('c')
+            ->leftJoin('c.tags', 't')
+            ->andWhere('t.name=:tag')
+            ->setParameter('tag', $tag)
+            ->getQuery()
+            ->getResult();
+    }
+
     // /**
     //  * @return AbstractContent[] Returns an array of AbstractContent objects
     //  */

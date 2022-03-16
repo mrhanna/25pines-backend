@@ -8,6 +8,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Doctrine\Persistence\ManagerRegistry;
 
+use App\Repository\AbstractContentRepository;
 use App\Repository\TagRepository;
 use App\Utility\HalJsonFactory;
 

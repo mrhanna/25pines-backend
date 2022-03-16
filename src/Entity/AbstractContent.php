@@ -226,7 +226,7 @@ abstract class AbstractContent implements ConciseSerializable
             'genres' => $this->genres,
             'thumbnail' => $this->thumbnail,
             'dateAdded' => $this->dateAdded->format(\DateTimeInterface::ISO8601),
-            'tags' => $tags,
+            //'tags' => $tags,
         ));
 
         return $toReturn;

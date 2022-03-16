@@ -9,7 +9,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Doctrine\Persistence\ManagerRegistry;
 
 use App\Repository\StreamableContentRepository;
-use App\Repository\AbstractContentRepository;
+use App\Repository\AbstractStreamableContentRepository;
 use App\Utility\ContentFactory;
 use App\Utility\HalJson;
 use App\Utility\HalJsonFactory;
@@ -17,9 +17,10 @@ use App\Utility\HalJsonFactory;
 class MediaController extends AbstractController
 {
     #[Route('/media', name: 'showAllContent', methods: ['GET'])]
-    public function showAllContent(StreamableContentRepository $repo, HalJsonFactory $hjf): Response
+    public function showAllContent(Request $req, StreamableContentRepository $repo, HalJsonFactory $hjf): Response
     {
-        $content = $repo->findAll();
+        $tag = $req->query->get('tag');
+        $content = $tag ? $repo->findAllWithTag($tag) : $repo->findAll();
         $collection = $hjf->createCollection('media', $content)
             ->link('self', $this->generateUrl('showAllContent', [], 0));
 
@@ -27,12 +28,22 @@ class MediaController extends AbstractController
     }
 
     #[Route('/media/{uuid}', name: 'showContent', methods: ['GET'])]
-    public function showContent(AbstractContentRepository $contentRepo, HalJsonFactory $hjf, $uuid): Response
+    public function showContent(AbstractStreamableContentRepository $contentRepo, HalJsonFactory $hjf, string $uuid): Response
     {
           $contentEntity = $contentRepo->findOneBy(['uuid' => $uuid]);
           $json = $hjf->create($contentEntity);
 
           return $this->json($json);
+    }
+
+    #[Route('/media/{uuid}/tags', name: 'showContentTags', methods: ['GET'])]
+    public function showContentTags(AbstractStreamableContentRepository $repo, HalJsonFactory $hjf, string $uuid): Response
+    {
+        $asc = $repo->findOneBy(['uuid' => $uuid]);
+        $tags = $hjf->createCollection('tags', $asc->getTags())
+            ->link('self', $this->generateUrl('showContentTags', ['uuid' => $uuid], 0))
+            ->link('media', $this->generateUrl('showContent', ['uuid' => $uuid], 0));
+        return $this->json($tags);
     }
 
 

@@ -5,15 +5,17 @@ namespace App\Controller\API;
 use App\Repository\SeriesRepository;
 use App\Utility\HalJsonFactory;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 class SeriesController extends AbstractController
 {
     #[Route('/series', name: 'showAllSeries', methods: ['GET'])]
-    public function showAllSeries(SeriesRepository $repo, HalJsonFactory $hjf): Response
+    public function showAllSeries(Request $req, SeriesRepository $repo, HalJsonFactory $hjf): Response
     {
-        $series = $repo->findAll();
+        $tag = $req->query->get('tag');
+        $series = $tag ? $repo->findAllWithTag($tag) : $repo->findAll();
         $collection = $hjf->createCollection('series', $series)
             ->link('self', $this->generateUrl('showAllSeries', [], 0));
 
@@ -32,7 +34,18 @@ class SeriesController extends AbstractController
     {
         $series = $repo->findOneBy(['uuid' => $uuid]);
         $collection = $hjf->createCollection('episodes', $series->getEpisodes())
-            ->link('self', $this->generateUrl('showSeriesEpisodes', ['uuid' => $uuid], 0));
+            ->link('self', $this->generateUrl('showSeriesEpisodes', ['uuid' => $uuid], 0))
+            ->link('series', $this->generateUrl('showSeries', ['uuid' => $uuid], 0));
         return $this->json($collection);
+    }
+
+    #[Route('/series/{uuid}/tags', name: 'showSeriesTags', methods: ['GET'])]
+    public function showSeriesTags(SeriesRepository $repo, HalJsonFactory $hjf, string $uuid): Response
+    {
+        $series = $repo->findOneBy(['uuid' => $uuid]);
+        $tags = $hjf->createCollection('tags', $series->getTags())
+            ->link('self', $this->generateUrl('showSeriesTags', ['uuid' => $uuid], 0))
+            ->link('series', $this->generateUrl('showSeries', ['uuid' => $uuid], 0));
+        return $this->json($tags);
     }
 }
