@@ -51,8 +51,6 @@ class MediaController extends AbstractController
         return $this->json($tags);
     }
 
-
-
     #[Route('/media', name: 'addContent', methods: ['POST'])]
     public function addContent(ValidatorInterface $vi, ManagerRegistry $doctrine, ContentFactory $cf, Request $request): Response
     {

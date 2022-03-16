@@ -4,6 +4,7 @@ namespace App\API\Entity;
 
 use App\API\Repository\VideoRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: VideoRepository::class)]
 class Video implements \JsonSerializable
@@ -19,11 +20,11 @@ class Video implements \JsonSerializable
     private $url;
 
     #[ORM\Column(type: 'string', length: 3)]
-    #[Assert\Choice(['HLS', 'SMOOTH', 'DASH', 'MP4', 'MOV', 'M4V'])]
+    #[Assert\Choice(['SD', 'HD', 'FHD', 'UHD'])]
     private $quality;
 
     #[ORM\Column(type: 'string', length: 6)]
-    #[Assert\Choice(['SD', 'HD', 'FHD', 'UHD'])]
+    #[Assert\Choice(['HLS', 'SMOOTH', 'DASH', 'MP4', 'MOV', 'M4V'])]
     private $videoType;
 
     #[ORM\ManyToOne(targetEntity: AbstractStreamableContent::class, inversedBy: 'videos')]
