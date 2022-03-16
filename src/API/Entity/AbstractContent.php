@@ -55,6 +55,8 @@ abstract class AbstractContent implements ConciseSerializable
     {
         $this->tags = new ArrayCollection();
         $this->uuid = Uuid::v4();
+        $this->dateAdded = new \DateTimeImmutable();
+        $this->releaseDate = new \DateTimeImmutable();
     }
 
     public function getId(): ?int
