@@ -3,13 +3,12 @@
 namespace App\API\Entity;
 
 use App\API\Repository\AbstractContentRepository;
+use App\API\Utility\ConciseSerializable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-
 use Symfony\Component\Uid\Uuid;
-
-use App\API\Utility\ConciseSerializable;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: AbstractContentRepository::class)]
 #[ORM\InheritanceType("SINGLE_TABLE")]
@@ -25,18 +24,23 @@ abstract class AbstractContent implements ConciseSerializable
     protected $uuid;
 
     #[ORM\Column(type: 'string', length: 50)]
+    #[Assert\NotBlank]
     protected $title;
 
     #[ORM\Column(type: 'string', length: 100)]
+    #[Assert\Url]
+    #[Assert\NotBlank]
     protected $thumbnail;
 
     #[ORM\Column(type: 'date', nullable: true)]
     protected $releaseDate;
 
     #[ORM\Column(type: 'string', length: 200, nullable: true)]
+    #[Assert\NotBlank]
     protected $shortDescription;
 
     #[ORM\Column(type: 'string', length: 500, nullable: true)]
+    #[Assert\NotBlank]
     protected $longDescription;
 
     #[ORM\ManyToMany(targetEntity: Tag::class, mappedBy: 'content')]
@@ -49,6 +53,7 @@ abstract class AbstractContent implements ConciseSerializable
     protected $genres = [];
 
     #[ORM\Column(type: 'string', length: 14)]
+    #[Assert\NotBlank]
     protected $mediaType;
 
     public function __construct()

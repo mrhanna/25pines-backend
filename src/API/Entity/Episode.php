@@ -4,6 +4,7 @@ namespace App\API\Entity;
 
 use App\API\Repository\EpisodeRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: EpisodeRepository::class)]
 class Episode extends AbstractStreamableContent
@@ -12,9 +13,11 @@ class Episode extends AbstractStreamableContent
     private $seasonNumber;
 
     #[ORM\Column(type: 'smallint', nullable: true)]
+    #[Assert\NotBlank]
     private $episodeNumber;
 
     #[ORM\ManyToOne(targetEntity: Series::class, inversedBy: 'episodes')]
+    #[Assert\NotNull]
     private $series;
 
     public function __construct()

@@ -14,15 +14,20 @@ class Video implements \JsonSerializable
     private $id;
 
     #[ORM\Column(type: 'string', length: 100)]
+    #[Assert\Url]
+    #[Assert\NotBlank]
     private $url;
 
     #[ORM\Column(type: 'string', length: 3)]
+    #[Assert\Choice(['HLS', 'SMOOTH', 'DASH', 'MP4', 'MOV', 'M4V'])]
     private $quality;
 
     #[ORM\Column(type: 'string', length: 6)]
+    #[Assert\Choice(['SD', 'HD', 'FHD', 'UHD'])]
     private $videoType;
 
     #[ORM\ManyToOne(targetEntity: AbstractStreamableContent::class, inversedBy: 'videos')]
+    #[Assert\NotNull]
     private $content;
 
     public function getId(): ?int

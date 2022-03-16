@@ -6,6 +6,7 @@ use App\API\Repository\AbstractStreamableContentRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: AbstractStreamableContentRepository::class)]
 class AbstractStreamableContent extends AbstractContent
@@ -14,9 +15,12 @@ class AbstractStreamableContent extends AbstractContent
     protected $videos;
 
     #[ORM\Column(type: 'integer', nullable: true)]
+    #[Assert\NotNull]
+    #[Assert\Positive]
     protected $duration;
 
     #[ORM\Column(type: 'string', length: 5, nullable: true)]
+    #[Assert\NotBlank]
     protected $language;
 
     public function __construct()
