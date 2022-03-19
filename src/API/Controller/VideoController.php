@@ -2,6 +2,7 @@
 
 namespace App\API\Controller;
 
+use App\API\Entity\AbstractStreamableContent;
 use App\API\Entity\Video;
 use App\API\Repository\AbstractStreamableContentRepository;
 use App\API\Repository\VideoRepository;
@@ -16,49 +17,118 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class VideoController extends AbstractController
 {
-    #[Route('media/{uuid}/videos', name: 'showContentVideos', methods: ['GET'])]
-    public function showContentVideos(AbstractStreamableContentRepository $repo, HalJsonFactory $hjf, $uuid): Response
+    private $ascRepo;
+    private $vRepo;
+    private $hjf;
+    private $vi;
+    private $em;
+
+    public function __construct(
+        AbstractStreamableContentRepository $ascRepo,
+        VideoRepository $vRepo,
+        HalJsonFactory $hjf,
+        ValidatorInterface $vi,
+        ManagerRegistry $doctrine)
     {
-        $content = $repo->findOneBy(['uuid' => $uuid]);
+        $this->ascRepo      = $ascRepo;
+        $this->vRepo        = $vRepo;
+        $this->hjf          = $hjf;
+        $this->vi           = $vi;
+        $this->em           = $doctrine->getManager();
+    }
+
+    #[Route('media/{uuid}/videos', name: 'showContentVideos')]
+    public function videoCollection(Request $req, string $uuid): Response
+    {
+        $content = $this->ascRepo->findOneBy(['uuid' => $uuid]);
         if (!$content) throw $this->createNotFoundException();
 
-        $json = $hjf->createCollection('videos', $content->getVideos())
-            ->link('self', $this->generateUrl('showContentVideos', ['uuid' => $uuid], 0))
-            ->link('media', $this->generateUrl('showContent', ['uuid' => $uuid], 0));
+        switch ($req->getMethod()) {
+            case 'GET':
+                return $this->readVideos($uuid);
+                break;
+            case 'POST':
+                return $this->addVideo($req);
+        }
+
+        return $this->json(['message' => $req->getMethod().' is not allowed at this endpoint.'], 405);
+    }
+
+    #[Route('media/{uuid}/videos/{id}', name: 'showVideo')]
+    public function videoSingleton(Request $req, string $uuid, int $id): Response
+    {
+        $video = $this->vRepo->findOneBy(['id' => $id]);
+        if (!$video || $uuid != $video->getContent()->getUuid()) throw $this->createNotFoundException();
+
+        switch ($req->getMethod()) {
+            case 'GET':
+                return $this->readVideo($video);
+                break;
+            case 'DELETE':
+                return $this->deleteVideo($video);
+                break;
+            case 'PUT':
+            case 'PATCH':
+                return $this->updateVideo($video);
+        }
+
+        return $this->json(['message' => $req->getMethod().' is not allowed at this endpoint.'], 405);
+    }
+
+    public function readVideos(AbstractStreamableContent $content): Response
+    {
+        $json = $this->hjf->createCollection('videos', $content->getVideos())
+            ->link('self', $this->generateUrl('showContentVideos', ['uuid' => $content->getUuid()], 0))
+            ->link('media', $this->generateUrl('showContent', ['uuid' => $content->getUuid()], 0));
         return $this->json($json);
     }
 
-    #[Route('media/{uuid}/videos/{id}', name: 'showVideo', methods: ['GET'])]
-    public function showVideo(VideoRepository $repo, HalJsonFactory $hjf, string $uuid, int $id): Response
+    public function addVideo(Request $req, AbstractStreamableContent $content): Response
     {
-        $video = $repo->findOneBy(['id' => $id]);
-        if ($uuid != $video->getContent()->getUuid()) throw $this->createNotFoundException();
-        $json = $hjf->create($video);
-        return $this->json($json);
-    }
-
-    #[Route('/media/{uuid}/videos', name: 'addVideo', methods: ['POST'])]
-    public function addVideo(ValidatorInterface $vi, AbstractStreamableContentRepository $repo, ManagerRegistry $doctrine, Request $request, string $uuid): Response
-    {
-        $content = $repo->findOneBy(['uuid' => $uuid]);
-        if (!$content) throw $this->createNotFoundException();
-
         $video = new Video();
-        $video->setUrl($request->request->get('url'));
-        $video->setQuality($request->request->get('quality'));
-        $video->setVideoType($request->request->get('videoType'));
+        $video->setUrl($req->request->get('url'));
+        $video->setQuality($req->request->get('quality'));
+        $video->setVideoType($req->request->get('videoType'));
         $video->setContent($content);
 
-        $errors = $vi->validate($video);
+        $errors = $this->vi->validate($video);
         if (count($errors) > 0) {
             throw new ValidationFailedException('value', $errors);
         }
 
-        $em = $doctrine->getManager();
-        $em->persist($video);
-        $em->persist($content);
-        $em->flush();
+        $this->em->persist($video);
+        $this->em->persist($content);
+        $this->em->flush();
 
-        return $this->redirectToRoute('showContentVideos', ['uuid' => $uuid]);
+        return $this->redirectToRoute('showContentVideos', ['uuid' => $content->getUuid()]);
+    }
+
+    public function readVideo(Video $video): Response
+    {
+        $json = $this->hjf->create($video);
+        return $this->json($json);
+    }
+
+    public function deleteVideo(Video $video): Response
+    {
+        $this->em->remove($video);
+        $this->em->flush();
+        return new Response('', 204);
+    }
+
+    public function updateVideo(Request $req, Video $video): Response
+    {
+        if ($req->request->get('url')) $video->setUrl($req->request->get('url'));
+        if ($req->request->get('quality')) $video->setQuality($req->request->get('quality'));
+        if ($req->request->get('videoType')) $video->setVideoType($req->request->get('videoType'));
+
+        $errors = $this->vi->validate($video);
+        if (count($errors) > 0) {
+            throw new ValidationFailedException('value', $errors);
+        }
+
+        $this->em->persist($video);
+        $this->em->flush();
+        return new Response('', 204);
     }
 }

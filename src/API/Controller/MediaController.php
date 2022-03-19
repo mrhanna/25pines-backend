@@ -19,77 +19,38 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class MediaController extends AbstractController
 {
-    #[Route('/media', name: 'showAllContent', methods: ['GET'])]
-    public function showAllContent(Request $req, StreamableContentRepository $repo, HalJsonFactory $hjf): Response
+    #[Route('/media', name: 'showAllContent')]
+    public function mediaCollection(ContentCrudController $ccr, Request $req, StreamableContentRepository $repo): Response
     {
-        $tag = $req->query->get('tag');
-        $content = $tag ? $repo->findAllWithTag($tag) : $repo->findAll();
-        $collection = $hjf->createCollection('media', $content)
-            ->link('self', $this->generateUrl('showAllContent', [], 0));
-
-        return $this->json($collection);
+        return $ccr->collection($req, $repo,
+            self: 'showAllContent',
+            onCreate: 'showContent',
+        );
     }
 
-    #[Route('/media/{uuid}', name: 'showContent', methods: ['GET'])]
-    public function showContent(AbstractStreamableContentRepository $repo, HalJsonFactory $hjf, string $uuid): Response
+    #[Route('/media/{uuid}', name: 'showContent')]
+    public function mediaSingleton(ContentCrudController $ccr, Request $req, string $uuid, AbstractStreamableContentRepository $repo): Response
     {
-          $content = $repo->findOneBy(['uuid' => $uuid]);
-          if (!$content) throw $this->createNotFoundException();
-          $json = $hjf->create($content);
-
-          return $this->json($json);
+        return $ccr->singleton($req, $uuid, $repo);
     }
 
-    #[Route('/media/{uuid}/tags', name: 'showContentTags', methods: ['GET'])]
-    public function showContentTags(AbstractStreamableContentRepository $repo, HalJsonFactory $hjf, string $uuid): Response
+    #[Route('/media/{uuid}/tags', 'showContentTags')]
+    public function showContentTags(EntityTagController $tc, Request $req, AbstractStreamableContentRepository $repo, string $uuid): Response
     {
-        $asc = $repo->findOneBy(['uuid' => $uuid]);
-        if (!$asc) throw $this->createNotFoundException();
-        $tags = $hjf->createCollection('tags', $asc->getTags())
-            ->link('self', $this->generateUrl('showContentTags', ['uuid' => $uuid], 0))
-            ->link('media', $this->generateUrl('showContent', ['uuid' => $uuid], 0));
-        return $this->json($tags);
+        return $tc->entityTagCollection($req, $repo,
+            uuid: $uuid,
+            self: 'showContentTags',
+            parent: 'showParent'
+        );
     }
 
-    #[Route('/media', name: 'addContent', methods: ['POST'])]
-    public function addContent(ValidatorInterface $vi, ManagerRegistry $doctrine, ContentFactory $cf, Request $request): Response
+    #[Route('/media/{uuid}/tags/{name}', 'showContentTag')]
+    public function showContentTag(EntityTagController $tc, Request $req, AbstractStreamableContentRepository $repo, string $name, string $uuid): Response
     {
-        $entityManager = $doctrine->getManager();
-
-        $content = $cf->createFromArray($request->request->all());
-        $errors = $vi->validate($content);
-        if ($errors) {
-            throw new ValidationFailedException('value goes here?', $errors);
-        }
-
-        $entityManager->persist($content);
-        $entityManager->flush();
-
-        return $this->redirectToRoute('showContent', ['uuid' => $content->getUuid()], 201);
-    }
-
-    #[Route('/media/{uuid}/tags', name: 'tagMedia', methods: ['POST'])]
-    public function tagContent(AbstractStreamableContentRepository $repo, TagRepository $tRepo, ManagerRegistry $doctrine, Request $request, string $uuid): Response
-    {
-        $content = $repo->findOneBy(['uuid' => $uuid]);
-        if (!$content) throw $this->createNotFoundException();
-
-        $em = $doctrine->getManager();
-
-        $name = $request->request->get('name');
-        if (!$name) throw new \Exception('No name was specified.');
-
-        $tag = $tRepo->findOneBy(['name' => $name]);
-
-        if (!$tag) {
-            $tag = (new Tag())->setName($name);
-            $em->persist($tag);
-        }
-
-        $content->addTag($tag);
-        $em->persist($content);
-        $em->flush();
-
-        return $this->redirectToRoute('showContentTags', ['uuid' => $uuid]);
+        return $tc->entityTagSingleton($req, $repo,
+            uuid: $uuid,
+            name: $name,
+            self: 'showContentTag',
+        );
     }
 }

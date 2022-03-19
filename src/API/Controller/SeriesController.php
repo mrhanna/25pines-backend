@@ -18,27 +18,43 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class SeriesController extends AbstractController
 {
-    #[Route('/series', name: 'showAllSeries', methods: ['GET'])]
-    public function showAllSeries(Request $req, SeriesRepository $repo, HalJsonFactory $hjf): Response
+    #[Route('/series', name: 'showAllSeries')]
+    public function seriesCollection(ContentCrudController $ccr, Request $req, SeriesRepository $repo): Response
     {
-        $tag = $req->query->get('tag');
-        $series = $tag ? $repo->findAllWithTag($tag) : $repo->findAll();
-        $collection = $hjf->createCollection('series', $series)
-            ->link('self', $this->generateUrl('showAllSeries', [], 0));
-
-        return $this->json($collection);
+        return $ccr->collection($req, $repo,
+            self: 'showAllSeries',
+            onCreate: 'showSeries',
+            mediaType: 'series'
+        );
     }
 
-    #[Route('/series/{uuid}', name: 'showSeries', methods: ['GET'])]
-    public function showSeries(SeriesRepository $repo, HalJsonFactory $hjf, string $uuid): Response
+    #[Route('/series/{uuid}', name: 'showSeries')]
+    public function seriesSingleton(ContentCrudController $ccr, Request $req, string $uuid, SeriesRepository $repo): Response
+    {
+        return $ccr->singleton($req, $uuid, $repo);
+    }
+
+    #[Route('/series/{uuid}/episodes', name: 'showSeriesEpisodes')]
+    public function showSeriesEpisodes(Request $req, string $uuid): Response
     {
         $series = $repo->findOneBy(['uuid' => $uuid]);
         if (!$series) throw $this->createNotFoundException();
-        return $this->json($hjf->create($series));
+
+        $args = ['uuid' => $uuid];
+
+        switch ($req->getMethod()) {
+            case 'GET':
+                return $this->forward(self::class.'::readEpisodes', $args);
+                break;
+            case 'POST':
+                return $this->forward(self::class.'::createEpisode', $args);
+                break;
+        }
+
+        return $this->json(['message' => $req->getMethod().' is not allowed at this endpoint.'], 405);
     }
 
-    #[Route('/series/{uuid}/episodes', name: 'showSeriesEpisodes', methods: ['GET'])]
-    public function showSeriesEpisodes(SeriesRepository $repo, HalJsonFactory $hjf, string $uuid): Response
+    public function readEpisodes(SeriesRepository $repo, HalJsonFactory $hjf, string $uuid): Response
     {
         $series = $repo->findOneBy(['uuid' => $uuid]);
         if (!$series) throw $this->createNotFoundException();
@@ -48,37 +64,7 @@ class SeriesController extends AbstractController
         return $this->json($collection);
     }
 
-    #[Route('/series/{uuid}/tags', name: 'showSeriesTags', methods: ['GET'])]
-    public function showSeriesTags(SeriesRepository $repo, HalJsonFactory $hjf, string $uuid): Response
-    {
-        $series = $repo->findOneBy(['uuid' => $uuid]);
-        if (!$series) throw $this->createNotFoundException();
-        $tags = $hjf->createCollection('tags', $series->getTags())
-            ->link('self', $this->generateUrl('showSeriesTags', ['uuid' => $uuid], 0))
-            ->link('series', $this->generateUrl('showSeries', ['uuid' => $uuid], 0));
-        return $this->json($tags);
-    }
-
-    #[Route('/media', name: 'addSeries', methods: ['POST'])]
-    public function addSeries(ValidatorInterface $vi, ManagerRegistry $doctrine, ContentFactory $cf, Request $request): Response
-    {
-        $entityManager = $doctrine->getManager();
-
-        $content = $cf->createFromArray($request->request->all());
-        $content->setMediaType('series');
-        $errors = $vi->validate($content);
-        if ($errors) {
-            throw new ValidationFailedException('value goes here?', $errors);
-        }
-
-        $entityManager->persist($content);
-        $entityManager->flush();
-
-        return $this->redirectToRoute('showSeries', ['uuid' => $content->getUuid()], 201);
-    }
-
-    #[Route('/series/{uuid}/episodes', name: 'addEpisode', methods: ['POST'])]
-    public function addEpisode(ValidatorInterface $vi, SeriesRepository $repo, ManagerRegistry $doctrine, ContentFactory $cf, Request $request, string $uuid): Response
+    public function createEpisode(ValidatorInterface $vi, SeriesRepository $repo, ManagerRegistry $doctrine, ContentFactory $cf, Request $request, string $uuid): Response
     {
         $series = $repo->findOneBy(['uuid' => $uuid]);
         if (!$series) throw $this->createNotFoundException();
@@ -100,28 +86,23 @@ class SeriesController extends AbstractController
         return $this->redirectToRoute('showContent', ['uuid' => $content->getUuid()], 201);
     }
 
-    #[Route('/series/{uuid}/tags', name: 'tagSeries', methods: ['POST'])]
-    public function tagSeries(SeriesRepository $repo, TagRepository $tRepo, ManagerRegistry $doctrine, Request $request, string $uuid): Response
+    #[Route('/series/{uuid}/tags', 'showSeriesTags')]
+    public function showSeriesTags(EntityTagController $tc, Request $req, SeriesRepository $repo, string $uuid): Response
     {
-        $series = $repo->findOneBy(['uuid' => $uuid]);
-        if (!$series) throw $this->createNotFoundException();
+        return $tc->entityTagCollection($req, $repo,
+            uuid: $uuid,
+            self: 'showSeriesTags',
+            parent: 'showSeries'
+        );
+    }
 
-        $em = $doctrine->getManager();
-
-        $name = $request->request->get('name');
-        if (!$name) throw new \Exception('No name was specified.');
-
-        $tag = $tRepo->findOneBy(['name' => $name]);
-
-        if (!$tag) {
-            $tag = (new Tag())->setName($name);
-            $em->persist($tag);
-        }
-
-        $series->addTag($tag);
-        $em->persist($series);
-        $em->flush();
-
-        return $this->redirectToRoute('showSeriesTags', ['uuid' => $uuid]);
+    #[Route('/series/{uuid}/tags/{name}', 'showSeriesTag')]
+    public function showSeriesTag(EntityTagController $tc, Request $req, SeriesRepository $repo, string $name, string $uuid): Response
+    {
+        return $tc->entityTagSingleton($req, $repo,
+            uuid: $uuid,
+            name: $name,
+            self: 'showSeriesTags',
+        );
     }
 }
