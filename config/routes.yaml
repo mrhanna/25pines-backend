@@ -8,6 +8,9 @@ roku_controllers:
     type: annotation
     prefix: roku/
 
+api_login_check:
+    path: /api/login
+
 kernel:
     resource: ../src/Kernel.php
     type: annotation
