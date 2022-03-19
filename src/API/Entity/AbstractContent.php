@@ -52,10 +52,6 @@ abstract class AbstractContent implements ConciseSerializable
     #[ORM\Column(type: 'simple_array', nullable: true)]
     protected $genres = [];
 
-    #[ORM\Column(type: 'string', length: 14)]
-    #[Assert\NotBlank]
-    protected $mediaType;
-
     public function __construct()
     {
         $this->tags = new ArrayCollection();
@@ -198,24 +194,15 @@ abstract class AbstractContent implements ConciseSerializable
         return $this;
     }
 
-    public function getMediaType(): ?string
-    {
-        return $this->mediaType;
-    }
+    abstract public function getMediaType();
 
-    public function setMediaType(string $mediaType): self
-    {
-        $this->mediaType = $mediaType;
-
-        return $this;
-    }
 
     // API Helper Methods
     public function conciseSerialize(): ?array
     {
         $toReturn = array(
             //'uuid' => $this->uuid,
-            'mediaType' => $this->mediaType,
+            'mediaType' => $this->getMediaType(),
             'title' => $this->title
         );
 

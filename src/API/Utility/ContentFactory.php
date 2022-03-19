@@ -40,7 +40,7 @@ class ContentFactory {
             }
 
             //TODO: better error handling.
-            else throw new Exception();
+            else throw new \Exception();
         }
 
         return $this->create($mediaType)->setByArray($args);

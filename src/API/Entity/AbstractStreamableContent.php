@@ -9,7 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: AbstractStreamableContentRepository::class)]
-class AbstractStreamableContent extends AbstractContent
+abstract class AbstractStreamableContent extends AbstractContent
 {
     #[ORM\OneToMany(mappedBy: 'content', targetEntity: Video::class)]
     protected $videos;

@@ -19,7 +19,6 @@ class Series extends AbstractContent
     {
         parent::__construct();
         $this->episodes = new ArrayCollection();
-        $this->mediaType = 'series';
     }
 
     /**
@@ -57,6 +56,11 @@ class Series extends AbstractContent
     public function episodeCount(): ?int
     {
         return $this->episodes->count();
+    }
+
+    public function getMediaType(): string
+    {
+        return 'series';
     }
 
     // API Helper Methods

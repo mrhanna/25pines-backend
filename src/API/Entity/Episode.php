@@ -23,7 +23,6 @@ class Episode extends AbstractStreamableContent
     public function __construct()
     {
         parent::__construct();
-        $this->mediaType = 'episode';
     }
 
     public function getSeasonNumber(): ?int
@@ -60,6 +59,11 @@ class Episode extends AbstractStreamableContent
         $this->series = $series;
 
         return $this;
+    }
+
+    public function getMediaType(): string
+    {
+        return 'episode';
     }
 
     //API Helper Methods
