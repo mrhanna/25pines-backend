@@ -8,6 +8,11 @@ roku_controllers:
     type: annotation
     prefix: roku/
 
+vimeo_controllers:
+    resource: '../src/Vimeo'
+    type: annotation
+    prefix: api/vimeo/
+
 api_login_check:
     path: /api/login
 

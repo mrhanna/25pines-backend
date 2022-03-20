@@ -28,4 +28,8 @@ services:
 
     App\RokuDP\: # assuming you have namespace like that
         resource: '../src/RokuDP'
+        tags: ['controller.service_arguments']
+
+    App\Vimeo\: # assuming you have namespace like that
+        resource: '../src/Vimeo'
         tags: ['controller.service_arguments']    
