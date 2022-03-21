@@ -2,7 +2,6 @@
 
 namespace App\API\Controller;
 
-use App\API\Entity\Tag;
 use App\API\Repository\AbstractContentRepository;
 use App\API\Utility\ContentFactory;
 use App\API\Utility\HalJsonFactory;
@@ -10,7 +9,6 @@ use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Validator\Exception\ValidationFailedException;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
@@ -29,7 +27,7 @@ class ContentCrudController extends AbstractController
         $this->em = $doctrine->getManager();
     }
 
-    public function collection(Request $req, AbstractContentRepository $repo, string $self, string $onCreate, string $mediaType = null): Response
+    public function collection(Request $req, AbstractContentRepository $repo, string $self, string $onCreate, ?string $mediaType = null): Response
     {
         switch ($req->getMethod()) {
             case 'GET':
@@ -39,7 +37,7 @@ class ContentCrudController extends AbstractController
                 return $this->create($req, $mediaType, $onCreate);
         }
 
-        return $this->json(['message' => $req->getMethod().' is not allowed at this endpoint.'], 405);
+        return $this->json(['message' => $req->getMethod() . ' is not allowed at this endpoint.'], 405);
     }
 
     public function singleton(Request $req, string $uuid, AbstractContentRepository $repo): Response
@@ -56,7 +54,7 @@ class ContentCrudController extends AbstractController
                 return $this->delete($repo, $uuid);
         }
 
-        return $this->json(['message' => $req->getMethod().' is not allowed at this endpoint.'], 405);
+        return $this->json(['message' => $req->getMethod() . ' is not allowed at this endpoint.'], 405);
     }
 
     public function readAll(Request $req, AbstractContentRepository $repo, string $self = ''): Response
@@ -64,15 +62,15 @@ class ContentCrudController extends AbstractController
         $tag = $req->query->get('tag');
         $content = $tag ? $repo->findAllWithTag($tag) : $repo->findAll();
         $collection = $this->hjf->createCollection('media', $content);
-        if ($self) $collection->link('self', $this->generateUrl($self));
+        if ($self) {
+            $collection->link('self', $this->generateUrl($self));
+        }
 
         return $this->json($collection);
     }
 
-    public function create(Request $req, string $mediaType = null, string $onCreate = ''): Response
+    public function create(Request $req, ?string $mediaType = null, string $onCreate = ''): Response
     {
-        $entityManager = $doctrine->getManager();
-
         $content = $this->cf->createFromArray($req->request->all(), $mediaType);
         $errors = $this->vi->validate($content);
         if (count($errors) > 0) {
@@ -88,7 +86,9 @@ class ContentCrudController extends AbstractController
     public function read(AbstractContentRepository $repo, string $uuid): Response
     {
         $content = $repo->findOneBy(['uuid' => $uuid]);
-        if (!$content) throw $this->createNotFoundException();
+        if (!$content) {
+            throw $this->createNotFoundException();
+        }
         $json = $this->hjf->create($content);
 
         return $this->json($json);
@@ -97,7 +97,9 @@ class ContentCrudController extends AbstractController
     public function update(Request $request, AbstractContentRepository $repo, string $uuid): Response
     {
         $content = $repo->findOneBy(['uuid' => $uuid]);
-        if (!$content) throw $this->createNotFoundException();
+        if (!$content) {
+            throw $this->createNotFoundException();
+        }
 
         $content->setByArray($request->request->all());
 
@@ -115,7 +117,9 @@ class ContentCrudController extends AbstractController
     public function delete(AbstractContentRepository $repo, string $uuid): Response
     {
         $content = $repo->findOneBy(['uuid' => $uuid]);
-        if (!$content) throw $this->createNotFoundException();
+        if (!$content) {
+            throw $this->createNotFoundException();
+        }
 
         $this->em->remove($content);
         $this->em->flush();

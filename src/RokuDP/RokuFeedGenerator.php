@@ -2,19 +2,18 @@
 
 namespace App\RokuDP;
 
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Routing\Annotation\Route;
-use Doctrine\Persistence\ManagerRegistry;
 use App\API\Entity\AbstractContent;
 use App\API\Entity\AbstractStreamableContent;
 use App\API\Entity\Episode;
 use App\API\Entity\Series;
 use App\API\Entity\Tag;
 use App\API\Entity\Video;
-use App\API\Repository\StreamableContentRepository;
 use App\API\Repository\SeriesRepository;
+use App\API\Repository\StreamableContentRepository;
+use Doctrine\Common\Collections\Collection;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Annotation\Route;
 
 class RokuFeedGenerator extends AbstractController
 {
@@ -45,11 +44,13 @@ class RokuFeedGenerator extends AbstractController
         return $this->json($feed);
     }
 
-    private function prepareContent(&$feed, string $name, $collection) {
+    private function prepareContent(array &$feed, string $name, Collection $collection): void
+    {
         foreach ($collection as $item) {
             $json = self::prepareContentParent($item);
-            if ($json)
+            if ($json) {
                 $feed[$name][] = $json;
+            }
         }
     }
 
@@ -70,14 +71,16 @@ class RokuFeedGenerator extends AbstractController
 
         if ($ac instanceof Series) {
             $episodesContainer = self::prepareEpisodes($ac);
-            if (!$episodesContainer) return [];
+            if (!$episodesContainer) {
+                return [];
+            }
             $r = array_merge($r, $episodesContainer);
-        }
-
-        else {
+        } else {
             $r['rating']        = ['rating' => 'UNRATED'];  //note - Roku series do not have ratings.
             $r['content'] = self::prepareContentChild($ac);
-            if (!$r['content']) return [];
+            if (!$r['content']) {
+                return [];
+            }
         }
 
         return $r;
@@ -104,11 +107,13 @@ class RokuFeedGenerator extends AbstractController
             }
         }
 
-        if (!$seasons) return [];
+        if (!$seasons) {
+            return [];
+        }
 
         // convert the seasons array from associative to regular
         // if there is only one key, a seasons array isn't necessary at all.
-        if (count($seasons) == 1) {
+        if (count($seasons) === 1) {
             return ['episodes' => array_values($seasons)[0]];
         }
 
@@ -117,7 +122,7 @@ class RokuFeedGenerator extends AbstractController
         foreach ($seasons as $k => $v) {
             $r[] = [
                 'seasonNumber' => $k,
-                'episodes' => $v
+                'episodes' => $v,
             ];
         }
 
@@ -139,7 +144,9 @@ class RokuFeedGenerator extends AbstractController
             $r['videos'][] = self::prepareVideo($video);
         }
 
-        if (!$r['videos']) return [];
+        if (!$r['videos']) {
+            return [];
+        }
 
         return $r;
     }
@@ -157,5 +164,4 @@ class RokuFeedGenerator extends AbstractController
     {
         return array_intersect($ac->getGenres(), self::ROKU_GENRES);
     }
-
 }

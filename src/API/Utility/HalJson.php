@@ -8,7 +8,7 @@ class HalJson implements \JsonSerializable
     private $embedded;
     private $json;
 
-    public function __construct($json = [])
+    public function __construct(array $json = [])
     {
         $this->links = [];
         $this->embedded = [];
@@ -40,9 +40,9 @@ class HalJson implements \JsonSerializable
         return $this;
     }
 
-    public function set(string $key, $val): self
+    public function set(string $key, mixed $val): self
     {
-        if ($key == '_links' || $key == '_embedded') {
+        if ($key === '_links' || $key === '_embedded') {
             // TODO: error handle;
             return $this;
         }
@@ -50,12 +50,12 @@ class HalJson implements \JsonSerializable
         return $this;
     }
 
-    public function get(string $key)
+    public function get(string $key): mixed
     {
         return $this->json[$key];
     }
 
-    public function has(string $key): ?bool
+    public function has(string $key): bool
     {
         return isset($this->json[$key]);
     }
@@ -75,7 +75,7 @@ class HalJson implements \JsonSerializable
         return $this;
     }
 
-    public function jsonSerialize(): ?array
+    public function jsonSerialize(): mixed
     {
         $arr = [];
 

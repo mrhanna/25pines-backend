@@ -84,14 +84,16 @@ class Video implements \JsonSerializable
         return $this;
     }
 
-    public function jsonSerialize(): array
+    /**
+     * @return array<string, mixed>
+     */
+    public function jsonSerialize(): mixed
     {
         return [
             //'id' => $this->id,
             'url' => $this->url,
             'quality' => $this->quality,
-            'videoType' => $this->videoType
+            'videoType' => $this->videoType,
         ];
     }
-
 }

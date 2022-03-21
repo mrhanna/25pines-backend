@@ -4,8 +4,8 @@ namespace App\API\Repository;
 
 use App\API\Entity\AbstractContent;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\ORM\OptimisticLockException;
-use Doctrine\ORM\ORMException;
+// use Doctrine\ORM\OptimisticLockException;
+// use Doctrine\ORM\ORMException;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -49,6 +49,9 @@ class AbstractContentRepository extends ServiceEntityRepository
     }
     */
 
+    /**
+     * @return Collection<AbstractContent>
+     */
     public function findAllWithTag(string $tag): array
     {
         return $this->createQueryBuilder('c')

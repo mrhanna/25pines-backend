@@ -28,8 +28,8 @@ class VideoController extends AbstractController
         VideoRepository $vRepo,
         HalJsonFactory $hjf,
         ValidatorInterface $vi,
-        ManagerRegistry $doctrine)
-    {
+        ManagerRegistry $doctrine
+    ) {
         $this->ascRepo      = $ascRepo;
         $this->vRepo        = $vRepo;
         $this->hjf          = $hjf;
@@ -41,7 +41,9 @@ class VideoController extends AbstractController
     public function videoCollection(Request $req, string $uuid): Response
     {
         $content = $this->ascRepo->findOneBy(['uuid' => $uuid]);
-        if (!$content) throw $this->createNotFoundException();
+        if (!$content) {
+            throw $this->createNotFoundException();
+        }
 
         switch ($req->getMethod()) {
             case 'GET':
@@ -51,14 +53,16 @@ class VideoController extends AbstractController
                 return $this->addVideo($req);
         }
 
-        return $this->json(['message' => $req->getMethod().' is not allowed at this endpoint.'], 405);
+        return $this->json(['message' => $req->getMethod() . ' is not allowed at this endpoint.'], 405);
     }
 
     #[Route('media/{uuid}/videos/{id}', name: 'showVideo')]
     public function videoSingleton(Request $req, string $uuid, int $id): Response
     {
         $video = $this->vRepo->findOneBy(['id' => $id]);
-        if (!$video || $uuid != $video->getContent()->getUuid()) throw $this->createNotFoundException();
+        if (!$video || $uuid !== $video->getContent()->getUuid()) {
+            throw $this->createNotFoundException();
+        }
 
         switch ($req->getMethod()) {
             case 'GET':
@@ -72,7 +76,7 @@ class VideoController extends AbstractController
                 return $this->updateVideo($video);
         }
 
-        return $this->json(['message' => $req->getMethod().' is not allowed at this endpoint.'], 405);
+        return $this->json(['message' => $req->getMethod() . ' is not allowed at this endpoint.'], 405);
     }
 
     public function readVideos(AbstractStreamableContent $content): Response
@@ -118,9 +122,15 @@ class VideoController extends AbstractController
 
     public function updateVideo(Request $req, Video $video): Response
     {
-        if ($req->request->get('url')) $video->setUrl($req->request->get('url'));
-        if ($req->request->get('quality')) $video->setQuality($req->request->get('quality'));
-        if ($req->request->get('videoType')) $video->setVideoType($req->request->get('videoType'));
+        if ($req->request->get('url')) {
+            $video->setUrl($req->request->get('url'));
+        }
+        if ($req->request->get('quality')) {
+            $video->setQuality($req->request->get('quality'));
+        }
+        if ($req->request->get('videoType')) {
+            $video->setVideoType($req->request->get('videoType'));
+        }
 
         $errors = $this->vi->validate($video);
         if (count($errors) > 0) {

@@ -4,12 +4,12 @@ namespace App\API\Hal;
 
 use App\API\Utility\HalJson;
 use App\API\Utility\HalStrategy;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class SeriesStrategy implements HalStrategy
 {
-    public static function full() {
-        return function(HalJson &$hj, $s) {
+    public static function full(): ?callable
+    {
+        return function (HalJson &$hj, $s): void {
             $hj->link('self', $this->generateUrl('showSeries', ['uuid' => $s->getUuid()]));
             $hj->link('collections', $this->generateUrl('showAllSeries'));
 
@@ -23,8 +23,9 @@ class SeriesStrategy implements HalStrategy
         };
     }
 
-    public static function concise() {
-        return function(HalJson &$hj, $s) {
+    public static function concise(): ?callable
+    {
+        return function (HalJson &$hj, $s): void {
             $hj->link('self', $this->generateUrl('showSeries', ['uuid' => $s->getUuid()]));
         };
     }

@@ -1,7 +1,7 @@
 <?php
 
 namespace App\API\Entity;
-use App\API\Entity\AbstractStreamableContent;
+
 use App\API\Repository\StreamableContentRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -19,7 +19,7 @@ class StreamableContent extends AbstractStreamableContent
         parent::__construct();
     }
 
-    public function getMediaType(): ?string
+    public function getMediaType(): string
     {
         return $this->mediaType;
     }

@@ -4,13 +4,12 @@ namespace App\API\Hal;
 
 use App\API\Utility\HalJson;
 use App\API\Utility\HalStrategy;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class AbstractStreamableContentStrategy implements HalStrategy
 {
-    public static function full() {
-        return function(HalJson &$hj, $sc)
-        {
+    public static function full(): ?callable
+    {
+        return function (HalJson &$hj, $sc): void {
             $videos = $sc->getVideos();
 
             foreach ($videos as $video) {
@@ -22,6 +21,7 @@ class AbstractStreamableContentStrategy implements HalStrategy
         };
     }
 
-    public static function concise() {
+    public static function concise(): ?callable
+    {
     }
 }

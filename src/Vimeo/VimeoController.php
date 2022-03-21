@@ -30,21 +30,25 @@ class VimeoController extends AbstractController
 
     public function __construct()
     {
-        $this->clientId = $_ENV['VIMEO_CLIENT_ID'];
-        $this->clientSecret = $_ENV['VIMEO_CLIENT_SECRET'];
+        $this->clientId = $this->getParameter('app.vimeo.clientId');
+        $this->clientSecret = $this->getParameter('app.vimeo.clientSecret');
     }
     #[Route('/fetch/{id}', 'vimeoFetch')]
-    public function fetch(Request $req, string $id): Response
+    public function fetch(string $id): Response
     {
         //$token = $req->headers->get('VimeoAuth');
         $token = '140ba6aeeb09d2c1a8d8826fac779ddd';
-        if (!$token) return $this->redirectToRoute('vimeoLogin', [], 302);
+        if (!$token) {
+            return $this->redirectToRoute('vimeoLogin', [], 302);
+        }
 
         $curl = new Curl();
-        $curl->setHeader('Authorization', 'bearer '.$token);
-        $curl->get('https://api.vimeo.com/videos/'.$id);
+        $curl->setHeader('Authorization', 'bearer ' . $token);
+        $curl->get('https://api.vimeo.com/videos/' . $id);
 
-        if ($curl->error) return $this->json($curl->error_code);
+        if ($curl->error) {
+            return $this->json($curl->error_code);
+        }
 
         $content = json_decode($curl->response, true);
 
@@ -57,10 +61,13 @@ class VimeoController extends AbstractController
             'duration' => $content['duration'],
             'language' => $content['language'] ?? 'en-US',
             'tags' => array_map(fn(array $tag) => $tag['name'], $content['tags']),
-            'videos' => array_map(self::class.'::toNativeVideo', $content['files']),
+            'videos' => array_map(self::class . '::toNativeVideo', $content['files']),
         ]);
     }
 
+    /**
+     * @return array<string, string>
+    */
     public function toNativeVideo(array $video): ?array
     {
         $url = $video['link'];
@@ -71,10 +78,14 @@ class VimeoController extends AbstractController
             if ($video['rendition'] === 'adaptive') {
                 $type = 'HLS';
                 $quality = 'FHD';
-            } else return null;
+            } else {
+                return null;
+            }
         }
 
-        if ($video['type'] !== 'video/mp4') return null;
+        if ($video['type'] !== 'video/mp4') {
+            return null;
+        }
 
         return [
             'url' => $url,
@@ -112,10 +123,11 @@ class VimeoController extends AbstractController
 
 
         $curl = new Curl();
-        $curl->setHeader('Authorization', 'basic '.base64_encode($this->clientId.':'.$this->clientSecret));
+        $curl->setHeader('Authorization', 'basic ' . base64_encode($this->clientId . ':' . $this->clientSecret));
         $curl->setHeader('Content-Type', 'application/json');
         $curl->setHeader('Accept', 'application/vnd.vimeo.*+json;version=3.4');
-        $curl->post('https://api.vimeo.com/oauth/access_token',
+        $curl->post(
+            'https://api.vimeo.com/oauth/access_token',
             json_encode([
                 'grant_type' => 'authorization_code',
                 'code' => $code,
@@ -129,14 +141,10 @@ class VimeoController extends AbstractController
 
         $res = json_decode($curl->response, true);
 
-        $token = [
+        return [
             'access_token' => $res['access_token'],
             'name' => $res['user']['name'],
-            'scope' => $res['scope']
+            'scope' => $res['scope'],
         ];
-
-        //$req->getSession()->set('vimeoToken', $token);
-
-        return $this->json($res);
     }
 }

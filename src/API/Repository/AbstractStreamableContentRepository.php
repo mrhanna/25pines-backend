@@ -3,9 +3,8 @@
 namespace App\API\Repository;
 
 use App\API\Entity\AbstractStreamableContent;
-use App\API\Repository\AbstractContentRepository;
-use Doctrine\ORM\OptimisticLockException;
-use Doctrine\ORM\ORMException;
+// use Doctrine\ORM\OptimisticLockException;
+// use Doctrine\ORM\ORMException;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**

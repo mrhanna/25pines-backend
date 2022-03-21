@@ -7,7 +7,6 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: SeriesRepository::class)]
 class Series extends AbstractContent
@@ -64,8 +63,10 @@ class Series extends AbstractContent
     }
 
     // API Helper Methods
-
-    public function conciseSerialize(): ?array
+    /**
+     * @return array<string, mixed>
+     */
+    public function conciseSerialize(): mixed
     {
         return array_merge(
             parent::conciseSerialize(),
@@ -73,7 +74,10 @@ class Series extends AbstractContent
         );
     }
 
-    public function jsonSerialize(): ?array
+    /**
+     * @return array<string, mixed>
+     */
+    public function jsonSerialize(): mixed
     {
         return array_merge(
             parent::jsonSerialize(),

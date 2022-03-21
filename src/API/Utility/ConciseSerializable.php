@@ -4,5 +4,8 @@ namespace App\API\Utility;
 
 interface ConciseSerializable extends \JsonSerializable
 {
-    public function conciseSerialize();
+    /**
+     * @return array<string, mixed>
+     */
+    public function conciseSerialize(): mixed;
 }

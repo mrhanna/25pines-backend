@@ -4,8 +4,8 @@ namespace App\API\Repository;
 
 use App\API\Entity\Tag;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\ORM\OptimisticLockException;
-use Doctrine\ORM\ORMException;
+// use Doctrine\ORM\OptimisticLockException;
+// use Doctrine\ORM\ORMException;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**

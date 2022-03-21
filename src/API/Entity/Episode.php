@@ -67,8 +67,10 @@ class Episode extends AbstractStreamableContent
     }
 
     //API Helper Methods
-
-    public function conciseSerialize(): ?array
+    /**
+     * @return array<string, mixed>
+     */
+    public function conciseSerialize(): mixed
     {
         $toReturn = parent::conciseSerialize();
 
@@ -80,7 +82,10 @@ class Episode extends AbstractStreamableContent
         return $toReturn;
     }
 
-    public function jsonSerialize(): ?array
+    /**
+     * @return array<string, mixed>
+     */
+    public function jsonSerialize(): mixed
     {
         $toReturn = parent::jsonSerialize();
 
@@ -103,12 +108,12 @@ class Episode extends AbstractStreamableContent
 
         $settable = [
             'seasonNumber',
-            'episodeNumber'
+            'episodeNumber',
         ];
 
         foreach ($settable as $var) {
             if (isset($args[$var])) {
-                $func = 'set'.ucfirst($var);
+                $func = 'set' . ucfirst($var);
                 $this->$func($args[$var]);
             }
         }

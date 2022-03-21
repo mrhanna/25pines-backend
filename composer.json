@@ -29,7 +29,8 @@
         "allow-plugins": {
             "composer/package-versions-deprecated": true,
             "symfony/flex": true,
-            "symfony/runtime": true
+            "symfony/runtime": true,
+            "dealerdirect/phpcodesniffer-composer-installer": false
         },
         "optimize-autoloader": true,
         "preferred-install": {
@@ -77,6 +78,7 @@
         }
     },
     "require-dev": {
+        "slevomat/coding-standard": "^7.0",
         "symfony/maker-bundle": "^1.36"
     }
 }

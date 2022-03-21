@@ -85,17 +85,15 @@ abstract class AbstractStreamableContent extends AbstractContent
     }
 
     // API Helper Methods
-    public function jsonSerialize(): ?array
+    /**
+     * @return array<string, mixed>
+     */
+    public function jsonSerialize(): mixed
     {
-        //$videos = array_map(fn(Video $video) => $video->toArray(), $this->videos->toArray());
-
-        $toReturn = array_merge(parent::jsonSerialize(), [
+        return array_merge(parent::jsonSerialize(), [
             'duration' => $this->duration,
             'language' => $this->language,
-            //'videos' => $videos
         ]);
-
-        return $toReturn;
     }
 
     public function setByArray(array $args): self
@@ -104,12 +102,12 @@ abstract class AbstractStreamableContent extends AbstractContent
 
         $settable = [
             'duration',
-            'language'
+            'language',
         ];
 
         foreach ($settable as $var) {
             if (isset($args[$var])) {
-                $func = 'set'.ucfirst($var);
+                $func = 'set' . ucfirst($var);
                 $this->$func($args[$var]);
             }
         }

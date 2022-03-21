@@ -4,6 +4,8 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
+    vimeo.clientId: '%env(VIMEO_CLIENT_ID)%'
+    vimeo.clientSecret: '%env(VIMEO_CLIENT_SECRET)%'
 
 services:
     # default configuration for services in *this* file
@@ -32,4 +34,4 @@ services:
 
     App\Vimeo\: # assuming you have namespace like that
         resource: '../src/Vimeo'
-        tags: ['controller.service_arguments']    
+        tags: ['controller.service_arguments']

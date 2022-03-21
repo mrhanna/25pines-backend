@@ -7,9 +7,6 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Doctrine\Persistence\ManagerRegistry;
-
-use Symfony\Component\Validator\Exception\ValidationFailedException;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 use App\API\Repository\TagRepository;
 use App\API\Utility\HalJsonFactory;
 
@@ -25,14 +22,16 @@ class TagController extends AbstractController
             return $this->json($collection);
         }
 
-        return $this->json(['message' => $req->getMethod().' is not allowed at this endpoint.'], 405);
+        return $this->json(['message' => $req->getMethod() . ' is not allowed at this endpoint.'], 405);
     }
 
     #[Route('/tags/{name}', name: 'showTag')]
-    public function showTag(Request $req, TagRepository $repo, HalJsonFactory $hjf, ManagerRegistry $doctrine, $name): Response
+    public function showTag(Request $req, TagRepository $repo, HalJsonFactory $hjf, ManagerRegistry $doctrine, string $name): Response
     {
         $tag = $repo->findOneBy(['name' => $name]);
-        if (!$tag) throw $this->createNotFoundException();
+        if (!$tag) {
+            throw $this->createNotFoundException();
+        }
 
         switch ($req->getMethod()) {
             case 'GET':
@@ -48,7 +47,9 @@ class TagController extends AbstractController
             case 'PUT':
             case 'PATCH':
                 $newName = trim($req->request->get('name'));
-                if (!$newName) return $this->json(['message' => 'name must be specified.'], 401);
+                if (!$newName) {
+                    return $this->json(['message' => 'name must be specified.'], 401);
+                }
                 $tag->setName($newName);
                 $em = $doctrine->getManager();
                 $em->persist($tag);
@@ -57,8 +58,6 @@ class TagController extends AbstractController
                 break;
         }
 
-        return $this->json(['message' => $req->getMethod().' is not allowed at this endpoint.'], 405);
+        return $this->json(['message' => $req->getMethod() . ' is not allowed at this endpoint.'], 405);
     }
-
-
 }

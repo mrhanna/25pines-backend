@@ -4,7 +4,6 @@ namespace App\API\Utility;
 
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use App\API\Hal as Strategies;
-use App\API\Utility\HalJsonFactory\AbstractContentStrategy;
 
 class HalJsonFactory
 {
@@ -34,7 +33,9 @@ class HalJsonFactory
         foreach ($this->registry as $class => $strategy) {
             if ($obj instanceof $class) {
                 $fn = $strategy::full()?->bindTo($this, $this);
-                if (!is_null($fn)) $fn($hj, $obj);
+                if (!is_null($fn)) {
+                    $fn($hj, $obj);
+                }
             }
         }
 
@@ -45,20 +46,28 @@ class HalJsonFactory
     {
         $hj = new HalJson();
 
-        if ($obj instanceof ConciseSerializable) $hj->setArray($obj->conciseSerialize());
-        else $hj->setArray($obj->jsonSerialize());
+        if ($obj instanceof ConciseSerializable) {
+            $hj->setArray($obj->conciseSerialize());
+        } else {
+            $hj->setArray($obj->jsonSerialize());
+        }
 
-        foreach($this->registry as $class => $strategy) {
+        foreach ($this->registry as $class => $strategy) {
             if ($obj instanceof $class) {
                 $fn = $strategy::concise()?->bindTo($this, $this);
-                if (!is_null($fn)) $fn($hj, $obj);
+                if (!is_null($fn)) {
+                    $fn($hj, $obj);
+                }
             }
         }
 
         return $hj;
     }
 
-    public function mapCreate(Iterable $objs): array
+    /**
+     * @return array<HalJson>
+     */
+    public function mapCreate(iterable $objs): array
     {
         $return = [];
         foreach ($objs as $obj) {
@@ -68,7 +77,10 @@ class HalJsonFactory
         return $return;
     }
 
-    public function mapCreateConcise(Iterable $objs): array
+    /**
+     * @return array<HalJson>
+     */
+    public function mapCreateConcise(iterable $objs): array
     {
         $return = [];
         foreach ($objs as $obj) {
@@ -78,14 +90,14 @@ class HalJsonFactory
         return $return;
     }
 
-    public function createCollection(string $name, Iterable $objs): HalJson
+    public function createCollection(string $name, iterable $objs): HalJson
     {
         $hj = new HalJson();
         $hj->embedArray($name, $this->mapCreateConcise($objs));
         return $hj;
     }
 
-    private function generateUrl(string $name, array $args = []): string
+    protected function generateUrl(string $name, array $args = []): string
     {
         return $this->router->generate($name, $args, UrlGeneratorInterface::ABSOLUTE_URL);
     }

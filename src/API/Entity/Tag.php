@@ -69,7 +69,11 @@ class Tag implements \JsonSerializable
         return $this;
     }
 
-    public function jsonSerialize() {
+    /**
+     * @return array<string, mixed>
+     */
+    public function jsonSerialize(): mixed
+    {
         return ['name' => $this->name];
     }
 }

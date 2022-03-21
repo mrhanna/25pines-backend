@@ -65,12 +65,12 @@ abstract class AbstractContent implements ConciseSerializable
         return $this->id;
     }
 
-    public function getUuid()
+    public function getUuid(): string
     {
         return $this->uuid;
     }
 
-    public function setUuid($uuid): self
+    public function setUuid(string $uuid): self
     {
         $this->uuid = $uuid;
 
@@ -106,12 +106,13 @@ abstract class AbstractContent implements ConciseSerializable
         return $this->releaseDate;
     }
 
-    public function setReleaseDate($releaseDate): self
+    public function setReleaseDate(string|\DateTimeInterface $releaseDate): self
     {
-        if (is_string($releaseDate))
+        if (is_string($releaseDate)) {
             $this->releaseDate = new \DateTimeImmutable($releaseDate);
-        else if ($releaseDate instanceof \DateTimeInterface)
+        } elseif ($releaseDate instanceof \DateTimeInterface) {
             $this->releaseDate = $releaseDate;
+        }
 
         return $this;
     }
@@ -172,16 +173,20 @@ abstract class AbstractContent implements ConciseSerializable
         return $this->dateAdded;
     }
 
-    public function setDateAdded($dateAdded): self
+    public function setDateAdded(string|\DateTimeInterface $dateAdded): self
     {
-        if (is_string($dateAdded))
+        if (is_string($dateAdded)) {
             $this->dateAdded = new \DateTimeImmutable($dateAdded);
-        else if ($dateAdded instanceof \DateTimeInterface)
+        } elseif ($dateAdded instanceof \DateTimeInterface) {
             $this->dateAdded = $dateAdded;
+        }
 
         return $this;
     }
 
+    /**
+     * @return array<string>
+     */
     public function getGenres(): ?array
     {
         return $this->genres;
@@ -194,26 +199,27 @@ abstract class AbstractContent implements ConciseSerializable
         return $this;
     }
 
-    abstract public function getMediaType();
-
+    abstract public function getMediaType(): string;
 
     // API Helper Methods
-    public function conciseSerialize(): ?array
+    /**
+     * @return array<string, mixed>
+     */
+    public function conciseSerialize(): mixed
     {
-        $toReturn = array(
+        return [
             //'uuid' => $this->uuid,
             'mediaType' => $this->getMediaType(),
-            'title' => $this->title
-        );
-
-        return $toReturn;
+            'title' => $this->title,
+        ];
     }
 
-    public function jsonSerialize(): ?array
+    /**
+     * @return array<string, mixed>
+     */
+    public function jsonSerialize(): mixed
     {
-        $tags = array_map(fn(Tag $tag) => $tag->getName(), $this->tags->toArray());
-
-        $toReturn = array_merge($this->conciseSerialize(), array(
+        return array_merge($this->conciseSerialize(), [
             'shortDescription' => $this->shortDescription,
             'longDescription' => $this->longDescription,
             'releaseDate' => $this->releaseDate->format(\DateTimeInterface::ISO8601),
@@ -221,9 +227,7 @@ abstract class AbstractContent implements ConciseSerializable
             'thumbnail' => $this->thumbnail,
             'dateAdded' => $this->dateAdded->format(\DateTimeInterface::ISO8601),
             //'tags' => $tags,
-        ));
-
-        return $toReturn;
+        ]);
     }
 
     public function setByArray(array $args): self
@@ -234,12 +238,12 @@ abstract class AbstractContent implements ConciseSerializable
             'releaseDate',
             'shortDescription',
             'longDescription',
-            'dateAdded'
+            'dateAdded',
         ];
 
         foreach ($settable as $var) {
             if (isset($args[$var])) {
-                $func = 'set'.ucfirst($var);
+                $func = 'set' . ucfirst($var);
                 $this->$func($args[$var]);
             }
         }
