@@ -35,3 +35,6 @@ services:
     App\Vimeo\: # assuming you have namespace like that
         resource: '../src/Vimeo'
         tags: ['controller.service_arguments']
+        parameters:
+            vimeo.clientId = '%env(VIMEO_CLIENT_ID)%'
+            vimeo.clientId = '%env(VIMEO_CLIENT_SECRET)%'
