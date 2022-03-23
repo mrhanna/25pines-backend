@@ -9,6 +9,7 @@ use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Symfony\Component\Validator\Exception\ValidationFailedException;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
@@ -37,7 +38,7 @@ class ContentCrudController extends AbstractController
                 return $this->create($req, $mediaType, $onCreate);
         }
 
-        return $this->json(['message' => $req->getMethod() . ' is not allowed at this endpoint.'], 405);
+        throw new MethodNotAllowedHttpException(['GET', 'POST'], $req->getMethod() . ' is not allowed at this endpoint.');
     }
 
     public function singleton(Request $req, string $uuid, AbstractContentRepository $repo): Response
@@ -54,7 +55,7 @@ class ContentCrudController extends AbstractController
                 return $this->delete($repo, $uuid);
         }
 
-        return $this->json(['message' => $req->getMethod() . ' is not allowed at this endpoint.'], 405);
+        throw new MethodNotAllowedHttpException(['GET', 'PUT', 'PATCH', 'DELETE'], $req->getMethod() . ' is not allowed at this endpoint.');
     }
 
     public function readAll(Request $req, AbstractContentRepository $repo, string $self = ''): Response

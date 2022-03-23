@@ -2,13 +2,14 @@
 
 namespace App\API\Controller;
 
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Routing\Annotation\Route;
-use Doctrine\Persistence\ManagerRegistry;
 use App\API\Repository\TagRepository;
 use App\API\Utility\HalJsonFactory;
+use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
+use Symfony\Component\Routing\Annotation\Route;
 
 class TagController extends AbstractController
 {
@@ -22,7 +23,7 @@ class TagController extends AbstractController
             return $this->json($collection);
         }
 
-        return $this->json(['message' => $req->getMethod() . ' is not allowed at this endpoint.'], 405);
+        throw new MethodNotAllowedHttpException(['GET'], $req->getMethod() . ' is not allowed at this endpoint.');
     }
 
     #[Route('/tags/{name}', name: 'showTag')]
@@ -58,6 +59,6 @@ class TagController extends AbstractController
                 break;
         }
 
-        return $this->json(['message' => $req->getMethod() . ' is not allowed at this endpoint.'], 405);
+        throw new MethodNotAllowedHttpException(['GET', 'PUT', 'PATCH', 'DELETE'], $req->getMethod() . ' is not allowed at this endpoint.');
     }
 }

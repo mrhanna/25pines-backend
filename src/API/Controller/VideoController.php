@@ -11,6 +11,7 @@ use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Validator\Exception\ValidationFailedException;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -53,7 +54,7 @@ class VideoController extends AbstractController
                 return $this->addVideo($req);
         }
 
-        return $this->json(['message' => $req->getMethod() . ' is not allowed at this endpoint.'], 405);
+        throw new MethodNotAllowedHttpException(['GET', 'POST'], $req->getMethod() . ' is not allowed at this endpoint.');
     }
 
     #[Route('media/{uuid}/videos/{id}', name: 'showVideo')]
@@ -76,7 +77,7 @@ class VideoController extends AbstractController
                 return $this->updateVideo($video);
         }
 
-        return $this->json(['message' => $req->getMethod() . ' is not allowed at this endpoint.'], 405);
+        throw new MethodNotAllowedHttpException(['GET', 'PUT', 'PATCH', 'DELETE'], $req->getMethod() . ' is not allowed at this endpoint.');
     }
 
     public function readVideos(AbstractStreamableContent $content): Response

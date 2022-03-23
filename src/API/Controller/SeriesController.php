@@ -9,6 +9,7 @@ use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Validator\Exception\ValidationFailedException;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -52,7 +53,7 @@ class SeriesController extends AbstractController
                 break;
         }
 
-        return $this->json(['message' => $req->getMethod() . ' is not allowed at this endpoint.'], 405);
+        throw new MethodNotAllowedHttpException(['GET', 'POST'], $req->getMethod() . ' is not allowed at this endpoint.');
     }
 
     public function readEpisodes(SeriesRepository $repo, HalJsonFactory $hjf, string $uuid): Response

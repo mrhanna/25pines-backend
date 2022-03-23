@@ -11,6 +11,7 @@ use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 
 class EntityTagController extends AbstractController
 {
@@ -41,7 +42,7 @@ class EntityTagController extends AbstractController
                 break;
         }
 
-        return $this->json(['message' => $req->getMethod() . ' is not allowed at this endpoint.'], 405);
+        throw new MethodNotAllowedHttpException(['GET', 'POST'], $req->getMethod() . ' is not allowed at this endpoint.');
     }
 
     public function entityTagSingleton(Request $req, AbstractContentRepository $repo, string $uuid, string $self, string $name): Response
@@ -55,7 +56,7 @@ class EntityTagController extends AbstractController
             return $this->untagContent($content, $self, $name);
         }
 
-        return $this->json(['message' => $req->getMethod() . ' is not allowed at this endpoint.'], 405);
+        throw new MethodNotAllowedHttpException(['DELETE'], $req->getMethod() . ' is not allowed at this endpoint.');
     }
 
 
