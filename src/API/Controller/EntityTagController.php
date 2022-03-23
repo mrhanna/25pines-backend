@@ -29,7 +29,7 @@ class EntityTagController extends AbstractController
     {
         $content = $repo->findOneBy(['uuid' => $uuid]);
         if (!$content) {
-            throw $this->createNotFoundException();
+            throw $this->createNotFoundException('Resource not found.');
         }
 
         switch ($req->getMethod()) {
@@ -48,7 +48,7 @@ class EntityTagController extends AbstractController
     {
         $content = $repo->findOneBy(['uuid' => $uuid]);
         if (!$content) {
-            throw $this->createNotFoundException();
+            throw $this->createNotFoundException('Resource not found.');
         }
 
         if ($req->getMethod() === 'DELETE') {
@@ -93,7 +93,7 @@ class EntityTagController extends AbstractController
         $tag = $this->tagRepo->findOneBy(['name' => $name]);
 
         if (!$tag) {
-            throw $this->createNotFoundException(); // maybe??
+            throw $this->createNotFoundException('Resource not found.'); // maybe??
         }
 
         $content->removeTag($tag);

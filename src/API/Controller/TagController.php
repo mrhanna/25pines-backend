@@ -30,7 +30,7 @@ class TagController extends AbstractController
     {
         $tag = $repo->findOneBy(['name' => $name]);
         if (!$tag) {
-            throw $this->createNotFoundException();
+            throw $this->createNotFoundException('Resource not found.');
         }
 
         switch ($req->getMethod()) {

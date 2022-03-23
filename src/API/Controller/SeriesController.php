@@ -38,7 +38,7 @@ class SeriesController extends AbstractController
     {
         $series = $repo->findOneBy(['uuid' => $uuid]);
         if (!$series) {
-            throw $this->createNotFoundException();
+            throw $this->createNotFoundException('Resource not found.');
         }
 
         $args = ['uuid' => $uuid];
@@ -59,7 +59,7 @@ class SeriesController extends AbstractController
     {
         $series = $repo->findOneBy(['uuid' => $uuid]);
         if (!$series) {
-            throw $this->createNotFoundException();
+            throw $this->createNotFoundException('Resource not found.');
         }
         $collection = $hjf->createCollection('episodes', $series->getEpisodes())
             ->link('self', $this->generateUrl('showSeriesEpisodes', ['uuid' => $uuid], 0))
@@ -71,7 +71,7 @@ class SeriesController extends AbstractController
     {
         $series = $repo->findOneBy(['uuid' => $uuid]);
         if (!$series) {
-            throw $this->createNotFoundException();
+            throw $this->createNotFoundException('Resource not found.');
         }
 
         $entityManager = $doctrine->getManager();

@@ -42,7 +42,7 @@ class VideoController extends AbstractController
     {
         $content = $this->ascRepo->findOneBy(['uuid' => $uuid]);
         if (!$content) {
-            throw $this->createNotFoundException();
+            throw $this->createNotFoundException('Resource not found.');
         }
 
         switch ($req->getMethod()) {
@@ -61,7 +61,7 @@ class VideoController extends AbstractController
     {
         $video = $this->vRepo->findOneBy(['id' => $id]);
         if (!$video || $uuid !== $video->getContent()->getUuid()) {
-            throw $this->createNotFoundException();
+            throw $this->createNotFoundException('Resource not found.');
         }
 
         switch ($req->getMethod()) {

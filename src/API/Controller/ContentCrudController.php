@@ -87,7 +87,7 @@ class ContentCrudController extends AbstractController
     {
         $content = $repo->findOneBy(['uuid' => $uuid]);
         if (!$content) {
-            throw $this->createNotFoundException();
+            throw $this->createNotFoundException('Resource not found.');
         }
         $json = $this->hjf->create($content);
 
@@ -98,7 +98,7 @@ class ContentCrudController extends AbstractController
     {
         $content = $repo->findOneBy(['uuid' => $uuid]);
         if (!$content) {
-            throw $this->createNotFoundException();
+            throw $this->createNotFoundException('Resource not found.');
         }
 
         $content->setByArray($request->request->all());
@@ -118,7 +118,7 @@ class ContentCrudController extends AbstractController
     {
         $content = $repo->findOneBy(['uuid' => $uuid]);
         if (!$content) {
-            throw $this->createNotFoundException();
+            throw $this->createNotFoundException('Resource not found.');
         }
 
         $this->em->remove($content);
