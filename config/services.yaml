@@ -28,6 +28,10 @@ services:
         resource: '../src/API/Controller'
         tags: ['controller.service_arguments']
 
+    App\API\EventListener\ApiExceptionListener:
+        tags:
+            - { name: kernel.event_listener, event: kernel.exception }
+
     App\RokuDP\: # assuming you have namespace like that
         resource: '../src/RokuDP'
         tags: ['controller.service_arguments']
@@ -35,6 +39,3 @@ services:
     App\Vimeo\: # assuming you have namespace like that
         resource: '../src/Vimeo'
         tags: ['controller.service_arguments']
-        parameters:
-            vimeo.clientId = '%env(VIMEO_CLIENT_ID)%'
-            vimeo.clientId = '%env(VIMEO_CLIENT_SECRET)%'
