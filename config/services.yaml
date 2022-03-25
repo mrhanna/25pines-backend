@@ -32,6 +32,10 @@ services:
         tags:
             - { name: kernel.event_listener, event: kernel.exception }
 
+    App\Image\:
+        resource: '../src/Image'
+        tags: ['controller.service_arguments']
+
     App\RokuDP\: # assuming you have namespace like that
         resource: '../src/RokuDP'
         tags: ['controller.service_arguments']

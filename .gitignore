@@ -1,3 +1,5 @@
+/uploads/images/
+/public/images/cached/
 
 ###> symfony/framework-bundle ###
 /.env.local

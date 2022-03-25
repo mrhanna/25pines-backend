@@ -13,6 +13,10 @@ vimeo_controllers:
     type: annotation
     prefix: api/vimeo/
 
+image_controllers:
+    resource: '../src/Image'
+    type: annotation
+
 api_login_check:
     path: /api/login
 
