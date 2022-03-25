@@ -45,6 +45,37 @@ class ImageGenerator extends AbstractController
         );
     }
 
+    public function toJsonArray(string $name): mixed
+    {
+        return array_map(
+            fn(array $dims) => [
+                'width' => $dims[0],
+                'height' => $dims[1],
+                'url' => $this->generateUrl('generateImage', [
+                    'width' => $dims[0],
+                    'height' => $dims[1],
+                    'name' => $name,
+                ]),
+            ],
+            self::SUPPORTED_DIMENSIONS
+        );
+    }
+
+    /**
+     * @return array<string>
+     */
+    public function toArray(string $name): array
+    {
+        return array_map(
+            fn(array $dims) => $this->generateUrl('generateImage', [
+                'width' => $dims[0],
+                'height' => $dims[1],
+                'name' => $name,
+            ]),
+            self::SUPPORTED_DIMENSIONS
+        );
+    }
+
     public function areDimensionsSupported(int $width, int $height): bool
     {
         return in_array([$width, $height], self::SUPPORTED_DIMENSIONS);
