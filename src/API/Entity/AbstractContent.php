@@ -27,9 +27,7 @@ abstract class AbstractContent implements ConciseSerializable
     #[Assert\NotBlank]
     protected $title;
 
-    #[ORM\Column(type: 'string', length: 100)]
-    #[Assert\Url]
-    #[Assert\NotBlank]
+    #[ORM\Column(type: 'string', length: 100, nullable: true)]
     protected $thumbnail;
 
     #[ORM\Column(type: 'date', nullable: true)]
@@ -234,7 +232,7 @@ abstract class AbstractContent implements ConciseSerializable
     {
         $settable = [
             'title',
-            'thumbnail',
+            // 'thumbnail',
             'releaseDate',
             'shortDescription',
             'longDescription',

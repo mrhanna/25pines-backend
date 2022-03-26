@@ -12,6 +12,7 @@ class ImageGenerator extends AbstractController
 {
     public const SUPPORTED_DIMENSIONS = [
         [800, 450],
+        [400, 225],
     ];
     /*
      * This route should only be called when an image doesn't exist in cache.
@@ -23,11 +24,11 @@ class ImageGenerator extends AbstractController
             throw $this->createNotFoundException('Image not found. (dimension)');
         }
 
-        $sourceFile = __DIR__ . '/../../uploads/images/' . $name . '.jpg';
-        $destFile = __DIR__ . '/../../public/images/cached/' . $width . 'x' . $height . '/' . $name . '.jpg';
+        $sourceFile = $this->getParameter('sourceImageDir') . $name . '.jpg';
+        $destFile = $this->getParameter('cachedImageDir') . $width . 'x' . $height . '/' . $name . '.jpg';
 
         if (!file_exists($sourceFile)) {
-            throw $this->createNotFoundException('Image not found. (source)');
+            throw $this->createNotFoundException('Image not found. (source) ' . $sourceFile);
         }
 
         $imagine = new Imagine();
@@ -40,9 +41,21 @@ class ImageGenerator extends AbstractController
             $image->get('jpg'),
             200,
             [
-                'Content-Type' => 'image/jpg',
+                'Content-Type' => 'image/jpeg',
             ]
         );
+    }
+
+    public function toUrl(
+        string $name,
+        int $width = self::SUPPORTED_DIMENSIONS[0][0],
+        int $height = self::SUPPORTED_DIMENSIONS[0][1]
+    ): string {
+        return $this->generateUrl('generateImage', [
+            'width' => $width,
+            'height' => $height,
+            'name' => $name,
+        ]);
     }
 
     public function toJsonArray(string $name): mixed
@@ -51,11 +64,7 @@ class ImageGenerator extends AbstractController
             fn(array $dims) => [
                 'width' => $dims[0],
                 'height' => $dims[1],
-                'url' => $this->generateUrl('generateImage', [
-                    'width' => $dims[0],
-                    'height' => $dims[1],
-                    'name' => $name,
-                ]),
+                'url' => $this->toUrl($name, $dims[0], $dims[1]),
             ],
             self::SUPPORTED_DIMENSIONS
         );
@@ -67,11 +76,7 @@ class ImageGenerator extends AbstractController
     public function toArray(string $name): array
     {
         return array_map(
-            fn(array $dims) => $this->generateUrl('generateImage', [
-                'width' => $dims[0],
-                'height' => $dims[1],
-                'name' => $name,
-            ]),
+            fn(array $dims) => $this->toUrl($name, $dims[0], $dims[1]),
             self::SUPPORTED_DIMENSIONS
         );
     }

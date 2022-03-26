@@ -6,6 +6,8 @@
 parameters:
     vimeo.clientId: '%env(VIMEO_CLIENT_ID)%'
     vimeo.clientSecret: '%env(VIMEO_CLIENT_SECRET)%'
+    sourceImageDir: '%kernel.project_dir%/uploads/images/'
+    cachedImageDir: '%kernel.project_dir%/public/images/cached/'
 
 services:
     # default configuration for services in *this* file
@@ -31,6 +33,10 @@ services:
     App\API\EventListener\ApiExceptionListener:
         tags:
             - { name: kernel.event_listener, event: kernel.exception }
+
+    App\API\Utility\ImageUploadService:
+        arguments:
+            $uploadDir: '%sourceImageDir%'
 
     App\Image\:
         resource: '../src/Image'

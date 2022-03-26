@@ -4,15 +4,18 @@ namespace App\API\Utility;
 
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use App\API\Hal as Strategies;
+use App\Image\ImageGenerator;
 
 class HalJsonFactory
 {
     private $router;
+    private $ig;
     private $registry;
 
-    public function __construct(UrlGeneratorInterface $router)
+    public function __construct(UrlGeneratorInterface $router, ImageGenerator $ig)
     {
         $this->router = $router;
+        $this->ig = $ig;
 
         // Strategy Registration
         $this->registry = [

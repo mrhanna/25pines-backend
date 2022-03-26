@@ -2,13 +2,16 @@
 
 namespace App\API\Controller;
 
+use App\API\Entity\AbstractContent;
 use App\API\Repository\AbstractContentRepository;
 use App\API\Utility\ContentFactory;
 use App\API\Utility\HalJsonFactory;
+use App\API\Utility\ImageUploadService;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Symfony\Component\Validator\Exception\ValidationFailedException;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -19,17 +22,29 @@ class ContentCrudController extends AbstractController
     private $cf;
     private $vi;
     private $em;
+    private $ius;
 
-    public function __construct(HalJsonFactory $hjf, ContentFactory $cf, ValidatorInterface $vi, ManagerRegistry $doctrine)
-    {
+    public function __construct(
+        HalJsonFactory $hjf,
+        ContentFactory $cf,
+        ValidatorInterface $vi,
+        ManagerRegistry $doctrine,
+        ImageUploadService $ius
+    ) {
         $this->hjf = $hjf;
         $this->cf = $cf;
         $this->vi = $vi;
         $this->em = $doctrine->getManager();
+        $this->ius = $ius;
     }
 
-    public function collection(Request $req, AbstractContentRepository $repo, string $self, string $onCreate, ?string $mediaType = null): Response
-    {
+    public function collection(
+        Request $req,
+        AbstractContentRepository $repo,
+        string $self,
+        string $onCreate,
+        ?string $mediaType = null
+    ): Response {
         switch ($req->getMethod()) {
             case 'GET':
                 return $this->readAll($req, $repo, $self);
@@ -38,7 +53,10 @@ class ContentCrudController extends AbstractController
                 return $this->create($req, $mediaType, $onCreate);
         }
 
-        throw new MethodNotAllowedHttpException(['GET', 'POST'], $req->getMethod() . ' is not allowed at this endpoint.');
+        throw new MethodNotAllowedHttpException(
+            ['GET', 'POST'],
+            $req->getMethod() . ' is not allowed at this endpoint.'
+        );
     }
 
     public function singleton(Request $req, string $uuid, AbstractContentRepository $repo): Response
@@ -78,6 +96,8 @@ class ContentCrudController extends AbstractController
             throw new ValidationFailedException('value goes here?', $errors);
         }
 
+        $this->saveThumbnail($content, $req->files->get('thumbnail'));
+
         $this->em->persist($content);
         $this->em->flush();
 
@@ -109,6 +129,8 @@ class ContentCrudController extends AbstractController
             throw new ValidationFailedException('value goes here?', $errors);
         }
 
+        $this->saveThumbnail($content, $req->files->get('thumbnail'));
+
         $this->em->persist($content);
         $this->em->flush();
 
@@ -126,5 +148,13 @@ class ContentCrudController extends AbstractController
         $this->em->flush();
 
         return new Response('', 204);
+    }
+
+    private function saveThumbnail(AbstractContent &$content, UploadedFile $thumbnail): void
+    {
+        if ($thumbnail && $thumbnail->isValid() && 'image/jpeg' === $thumbnail->getMimeType()) {
+            $filename = $this->ius->uploadImage($thumbnail);
+            $content->setThumbnail($filename);
+        }
     }
 }
