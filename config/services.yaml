@@ -34,10 +34,6 @@ services:
         tags:
             - { name: kernel.event_listener, event: kernel.exception }
 
-    App\API\Utility\ImageUploadService:
-        arguments:
-            $uploadDir: '%sourceImageDir%'
-
     App\Image\:
         resource: '../src/Image'
         tags: ['controller.service_arguments']

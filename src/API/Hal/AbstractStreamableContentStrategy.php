@@ -23,5 +23,6 @@ class AbstractStreamableContentStrategy implements HalStrategy
 
     public static function concise(): ?callable
     {
+        return null;
     }
 }

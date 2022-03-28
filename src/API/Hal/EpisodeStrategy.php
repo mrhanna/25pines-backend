@@ -23,5 +23,6 @@ class EpisodeStrategy implements HalStrategy
 
     public static function concise(): ?callable
     {
+        return null;
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Image;
 
+use App\API\Repository\ThumbnailRepository;
 use Imagine\Gd\Imagine;
 use Imagine\Image\Box;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -14,26 +15,38 @@ class ImageGenerator extends AbstractController
         [800, 450],
         [400, 225],
     ];
+
     /*
      * This route should only be called when an image doesn't exist in cache.
      */
     #[Route('/images/cached/{width}x{height}/{name}.jpg', 'generateImage', methods: ['GET'])]
-    public function generateImage(int $width, int $height, string $name): Response
+    public function generateImage(ThumbnailRepository $tr, int $width, int $height, string $name): Response
     {
         if (!$this->areDimensionsSupported($width, $height)) {
             throw $this->createNotFoundException('Image not found. (dimension)');
         }
 
-        $sourceFile = $this->getParameter('sourceImageDir') . $name . '.jpg';
-        $destFile = $this->getParameter('cachedImageDir') . $width . 'x' . $height . '/' . $name . '.jpg';
+        $destDir = $this->getParameter('cachedImageDir') . $width . 'x' . $height;
+        $destFile = $destDir . '/' . $name . '.jpg';
 
-        if (!file_exists($sourceFile)) {
-            throw $this->createNotFoundException('Image not found. (source) ' . $sourceFile);
+        if (!is_dir($destDir)) {
+            mkdir($destDir);
         }
 
-        $imagine = new Imagine();
+        // if (!file_exists($sourceFile)) {
+        //     throw $this->createNotFoundException('Image not found. (source) ' . $sourceFile);
+        // }
 
-        $image = $imagine->open($sourceFile);
+        $imageEntity = $tr->findOneBy(['name' => $name]);
+
+        if (!$imageEntity) {
+            throw $this->createNotFoundException('Image not found. (source)');
+        }
+
+        $data = stream_get_contents($imageEntity->getData());
+
+        $imagine = new Imagine();
+        $image = $imagine->load($data);
         $image->resize(new Box($width, $height))
             ->save($destFile);
 

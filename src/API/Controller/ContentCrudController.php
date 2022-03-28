@@ -3,6 +3,7 @@
 namespace App\API\Controller;
 
 use App\API\Entity\AbstractContent;
+use App\API\Entity\Thumbnail;
 use App\API\Repository\AbstractContentRepository;
 use App\API\Utility\ContentFactory;
 use App\API\Utility\HalJsonFactory;
@@ -22,20 +23,17 @@ class ContentCrudController extends AbstractController
     private $cf;
     private $vi;
     private $em;
-    private $ius;
 
     public function __construct(
         HalJsonFactory $hjf,
         ContentFactory $cf,
         ValidatorInterface $vi,
-        ManagerRegistry $doctrine,
-        ImageUploadService $ius
+        ManagerRegistry $doctrine
     ) {
         $this->hjf = $hjf;
         $this->cf = $cf;
         $this->vi = $vi;
         $this->em = $doctrine->getManager();
-        $this->ius = $ius;
     }
 
     public function collection(
@@ -96,7 +94,9 @@ class ContentCrudController extends AbstractController
             throw new ValidationFailedException('value goes here?', $errors);
         }
 
-        $this->saveThumbnail($content, $req->files->get('thumbnail'));
+        if ($req->files->get('thumbnail')) {
+            $this->saveThumbnail($content, $req->files->get('thumbnail'));
+        }
 
         $this->em->persist($content);
         $this->em->flush();
@@ -115,21 +115,23 @@ class ContentCrudController extends AbstractController
         return $this->json($json);
     }
 
-    public function update(Request $request, AbstractContentRepository $repo, string $uuid): Response
+    public function update(Request $req, AbstractContentRepository $repo, string $uuid): Response
     {
         $content = $repo->findOneBy(['uuid' => $uuid]);
         if (!$content) {
             throw $this->createNotFoundException('Resource not found.');
         }
 
-        $content->setByArray($request->request->all());
+        $content->setByArray($req->request->all());
 
         $errors = $this->vi->validate($content);
         if (count($errors) > 0) {
             throw new ValidationFailedException('value goes here?', $errors);
         }
 
-        $this->saveThumbnail($content, $req->files->get('thumbnail'));
+        if ($req->files->get('thumbnail')) {
+            $this->saveThumbnail($content, $req->files->get('thumbnail'));
+        }
 
         $this->em->persist($content);
         $this->em->flush();
@@ -150,11 +152,15 @@ class ContentCrudController extends AbstractController
         return new Response('', 204);
     }
 
-    private function saveThumbnail(AbstractContent &$content, UploadedFile $thumbnail): void
+    private function saveThumbnail(AbstractContent &$content, UploadedFile $data): void
     {
-        if ($thumbnail && $thumbnail->isValid() && 'image/jpeg' === $thumbnail->getMimeType()) {
-            $filename = $this->ius->uploadImage($thumbnail);
-            $content->setThumbnail($filename);
+        if ($data->isValid() && 'image/jpeg' === $data->getMimeType()) {
+            $thumbnail = new Thumbnail();
+            $thumbnail->setLayout('h')->setData($data->getContent());
+            $this->em->persist($thumbnail);
+            $content->setThumbnail($thumbnail);
+        } else {
+            throw new BadRequestHttpException('The thumbnail was invalid.');
         }
     }
 }

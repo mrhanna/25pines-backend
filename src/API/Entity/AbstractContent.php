@@ -27,8 +27,10 @@ abstract class AbstractContent implements ConciseSerializable
     #[Assert\NotBlank]
     protected $title;
 
-    #[ORM\Column(type: 'string', length: 100, nullable: true)]
-    protected $thumbnail;
+    // #[ORM\Column(type: 'string', length: 100, nullable: true)]
+    // protected $thumbnail;
+    #[ORM\ManyToOne(targetEntity: Thumbnail::class)]
+    private $thumbnail;
 
     #[ORM\Column(type: 'date', nullable: true)]
     protected $releaseDate;
@@ -87,17 +89,29 @@ abstract class AbstractContent implements ConciseSerializable
         return $this;
     }
 
-    public function getThumbnail(): ?string
+    public function getThumbnail(): ?Thumbnail
     {
         return $this->thumbnail;
     }
 
-    public function setThumbnail(string $thumbnail): self
+    public function setThumbnail(?Thumbnail $thumbnail): self
     {
         $this->thumbnail = $thumbnail;
 
         return $this;
     }
+
+    // public function getThumbnail(): ?string
+    // {
+    //     return $this->thumbnail;
+    // }
+    //
+    // public function setThumbnail(string $thumbnail): self
+    // {
+    //     $this->thumbnail = $thumbnail;
+    //
+    //     return $this;
+    // }
 
     public function getReleaseDate(): ?\DateTimeInterface
     {
@@ -222,7 +236,7 @@ abstract class AbstractContent implements ConciseSerializable
             'longDescription' => $this->longDescription,
             'releaseDate' => $this->releaseDate->format(\DateTimeInterface::ISO8601),
             'genres' => $this->genres,
-            'thumbnail' => $this->thumbnail,
+            //'thumbnail' => $this->thumbnail,
             'dateAdded' => $this->dateAdded->format(\DateTimeInterface::ISO8601),
             //'tags' => $tags,
         ]);
