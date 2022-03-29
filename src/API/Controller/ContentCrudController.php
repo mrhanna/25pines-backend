@@ -7,7 +7,6 @@ use App\API\Entity\Thumbnail;
 use App\API\Repository\AbstractContentRepository;
 use App\API\Utility\ContentFactory;
 use App\API\Utility\HalJsonFactory;
-use App\API\Utility\ImageUploadService;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
