@@ -220,7 +220,7 @@ abstract class AbstractContent implements ConciseSerializable
     public function conciseSerialize(): mixed
     {
         return [
-            //'uuid' => $this->uuid,
+            'uuid' => $this->uuid,
             'mediaType' => $this->getMediaType(),
             'title' => $this->title,
         ];
