@@ -234,10 +234,10 @@ abstract class AbstractContent implements ConciseSerializable
         return array_merge($this->conciseSerialize(), [
             'shortDescription' => $this->shortDescription,
             'longDescription' => $this->longDescription,
-            'releaseDate' => $this->releaseDate->format(\DateTimeInterface::ISO8601),
+            'releaseDate' => $this->releaseDate->format(\DateTimeInterface::ATOM),
             'genres' => $this->genres,
             //'thumbnail' => $this->thumbnail,
-            'dateAdded' => $this->dateAdded->format(\DateTimeInterface::ISO8601),
+            'dateAdded' => $this->dateAdded->format(\DateTimeInterface::ATOM),
             //'tags' => $tags,
         ]);
     }
