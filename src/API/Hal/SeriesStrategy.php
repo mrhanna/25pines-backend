@@ -14,12 +14,12 @@ class SeriesStrategy implements HalStrategy
             $hj->link('collections', $this->generateUrl('showAllSeries'));
 
             $hj->link('episodes', $this->generateUrl('showSeriesEpisodes', ['uuid' => $s->getUuid()]));
-            $episodes = $s->getEpisodes();
-            $hj->embedArray('episodes', $this->mapCreateConcise($episodes));
+            // $episodes = $s->getEpisodes();
+            // $hj->embedArray('episodes', $this->mapCreateConcise($episodes));
 
             $hj->link('tags', $this->generateUrl('showSeriesTags', ['uuid' => $s->getUuid()]));
-            $tags = $s->getTags();
-            $hj->embedArray('tags', $this->mapCreateConcise($tags));
+            // $tags = $s->getTags();
+            // $hj->embedArray('tags', $this->mapCreateConcise($tags));
         };
     }
 

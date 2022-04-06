@@ -101,6 +101,6 @@ class EntityTagController extends AbstractController
         $this->em->persist($content);
         $this->em->flush();
 
-        return $this->redirectToRoute($self, ['uuid' => $content->getUuid()]);
+        return new Response('', 204);
     }
 }

@@ -11,8 +11,8 @@ class StreamableContentStrategy implements HalStrategy
     {
         return function (HalJson &$hj, $s): void {
             $hj->link('tags', $this->generateUrl('showContentTags', ['uuid' => $s->getUuid()]));
-            $tags = $s->getTags();
-            $hj->embedArray('tags', $this->mapCreateConcise($tags));
+            // $tags = $s->getTags();
+            // $hj->embedArray('tags', $this->mapCreateConcise($tags));
         };
     }
 

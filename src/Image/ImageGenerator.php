@@ -14,6 +14,7 @@ class ImageGenerator extends AbstractController
     public const SUPPORTED_DIMENSIONS = [
         [800, 450],
         [400, 225],
+        [80, 45],
     ];
 
     /*
@@ -68,7 +69,7 @@ class ImageGenerator extends AbstractController
             'width' => $width,
             'height' => $height,
             'name' => $name,
-        ]);
+        ], 0);
     }
 
     public function toJsonArray(string $name): mixed
