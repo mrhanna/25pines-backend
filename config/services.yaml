@@ -7,7 +7,7 @@ parameters:
     vimeo.clientId: '%env(VIMEO_CLIENT_ID)%'
     vimeo.clientSecret: '%env(VIMEO_CLIENT_SECRET)%'
     sourceImageDir: '%kernel.project_dir%/uploads/images/'
-    cachedImageDir: '%kernel.project_dir%/public/images/cached/'
+    cachedImageDir: '%kernel.project_dir%/public_html/images/cached/'
 
 services:
     # default configuration for services in *this* file
