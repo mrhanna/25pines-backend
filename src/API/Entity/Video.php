@@ -90,7 +90,7 @@ class Video implements \JsonSerializable
     public function jsonSerialize(): mixed
     {
         return [
-            //'id' => $this->id,
+            'id' => $this->id,
             'url' => $this->url,
             'quality' => $this->quality,
             'videoType' => $this->videoType,

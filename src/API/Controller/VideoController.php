@@ -48,10 +48,10 @@ class VideoController extends AbstractController
 
         switch ($req->getMethod()) {
             case 'GET':
-                return $this->readVideos($uuid);
+                return $this->readVideos($content);
                 break;
             case 'POST':
-                return $this->addVideo($req);
+                return $this->addVideo($req, $content);
         }
 
         throw new MethodNotAllowedHttpException(['GET', 'POST'], $req->getMethod() . ' is not allowed at this endpoint.');

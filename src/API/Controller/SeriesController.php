@@ -16,6 +16,23 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class SeriesController extends AbstractController
 {
+    private $hjf;
+    private $cf;
+    private $vi;
+    private $em;
+
+    public function __construct(
+        HalJsonFactory $hjf,
+        ContentFactory $cf,
+        ValidatorInterface $vi,
+        ManagerRegistry $doctrine
+    ) {
+        $this->hjf = $hjf;
+        $this->cf = $cf;
+        $this->vi = $vi;
+        $this->em = $doctrine->getManager();
+    }
+
     #[Route('/series', name: 'showAllSeries')]
     public function seriesCollection(ContentCrudController $ccr, Request $req, SeriesRepository $repo): Response
     {
@@ -42,52 +59,48 @@ class SeriesController extends AbstractController
             throw $this->createNotFoundException('Resource not found.');
         }
 
-        $args = ['uuid' => $uuid];
-
         switch ($req->getMethod()) {
             case 'GET':
-                return $this->forward(self::class . '::readEpisodes', $args);
+                return $this->readEpisodes($repo, $uuid);
                 break;
             case 'POST':
-                return $this->forward(self::class . '::createEpisode', $args);
+                return $this->createEpisode($req, $repo, $uuid);
                 break;
         }
 
         throw new MethodNotAllowedHttpException(['GET', 'POST'], $req->getMethod() . ' is not allowed at this endpoint.');
     }
 
-    public function readEpisodes(SeriesRepository $repo, HalJsonFactory $hjf, string $uuid): Response
+    public function readEpisodes(SeriesRepository $repo, string $uuid): Response
     {
         $series = $repo->findOneBy(['uuid' => $uuid]);
         if (!$series) {
             throw $this->createNotFoundException('Resource not found.');
         }
-        $collection = $hjf->createCollection('episodes', $series->getEpisodes())
+        $collection = $this->hjf->createCollection('episodes', $series->getEpisodes())
             ->link('self', $this->generateUrl('showSeriesEpisodes', ['uuid' => $uuid], 0))
             ->link('series', $this->generateUrl('showSeries', ['uuid' => $uuid], 0));
         return $this->json($collection);
     }
 
-    public function createEpisode(ValidatorInterface $vi, SeriesRepository $repo, ManagerRegistry $doctrine, ContentFactory $cf, Request $request, string $uuid): Response
+    public function createEpisode(Request $request, SeriesRepository $repo, string $uuid): Response
     {
         $series = $repo->findOneBy(['uuid' => $uuid]);
         if (!$series) {
             throw $this->createNotFoundException('Resource not found.');
         }
 
-        $entityManager = $doctrine->getManager();
-
-        $content = $cf->createFromArray($request->request->all());
-        $content->setMediaType('episode');
+        $content = $this->cf->createFromArray($request->request->all(), 'episode');
+        // $content->setMediaType('episode');
         $content->setSeries($series);
 
-        $errors = $vi->validate($content);
+        $errors = $this->vi->validate($content);
         if (count($errors) > 0) {
             throw new ValidationFailedException('value goes here?', $errors);
         }
 
-        $entityManager->persist($content);
-        $entityManager->flush();
+        $this->em->persist($content);
+        $this->em->flush();
 
         return $this->redirectToRoute('showContent', ['uuid' => $content->getUuid()], 201);
     }
