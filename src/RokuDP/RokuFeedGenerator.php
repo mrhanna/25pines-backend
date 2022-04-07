@@ -10,7 +10,6 @@ use App\API\Entity\Tag;
 use App\API\Entity\Video;
 use App\API\Repository\SeriesRepository;
 use App\API\Repository\StreamableContentRepository;
-use Doctrine\Common\Collections\Collection;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -44,7 +43,7 @@ class RokuFeedGenerator extends AbstractController
         return $this->json($feed);
     }
 
-    private function prepareContent(array &$feed, string $name, Collection $collection): void
+    private function prepareContent(array &$feed, string $name, $collection): void
     {
         foreach ($collection as $item) {
             $json = self::prepareContentParent($item);
