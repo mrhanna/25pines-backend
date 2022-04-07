@@ -204,8 +204,12 @@ abstract class AbstractContent implements ConciseSerializable
         return $this->genres;
     }
 
-    public function setGenres(?array $genres): self
+    public function setGenres(array|string|null $genres): self
     {
+        if (is_string($genres)) {
+            $genres = json_decode($genres);
+        }
+
         $this->genres = $genres;
 
         return $this;
@@ -251,6 +255,7 @@ abstract class AbstractContent implements ConciseSerializable
             'shortDescription',
             'longDescription',
             'dateAdded',
+            'genres',
         ];
 
         foreach ($settable as $var) {
