@@ -207,7 +207,7 @@ abstract class AbstractContent implements ConciseSerializable
     public function setGenres(array|string|null $genres): self
     {
         if (is_string($genres)) {
-            $genres = json_decode($genres);
+            $genres = explode(',', $genres);
         }
 
         $this->genres = $genres;
