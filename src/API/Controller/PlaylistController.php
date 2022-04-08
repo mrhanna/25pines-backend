@@ -57,7 +57,7 @@ class PlaylistController extends AbstractController
         }
     }
 
-    #[Route('/playlists/{uuid}', name: 'showPlaylist', methods: ['GET', 'PUT', 'DELETE'])]
+    #[Route('/playlists/{uuid}', name: 'showPlaylist', methods: ['GET', 'PUT', 'PATCH', 'DELETE'])]
     public function showPlaylist(Request $req, string $uuid): Response
     {
         $playlist = $this->pr->findOneBy(['uuid' => $uuid]);
@@ -71,7 +71,7 @@ class PlaylistController extends AbstractController
                 break;
             case 'PUT':
                 $index = $req->request->get('index');
-                $content = $req->request->get('mediaUuid');
+                $content = $req->request->get('uuid');
 
                 if ($index !== null && $content !== null) {
                     return $this->insertIntoPlaylist($playlist, $content, $index);
@@ -83,6 +83,21 @@ class PlaylistController extends AbstractController
                     throw new BadRequestException('index and/or mediaUuid must be specified');
                 }
 
+                break;
+            case 'PATCH':
+                $name = $req->request->get('name');
+                $from = $req->request->get('from');
+                $to = $req->request->get('to');
+
+                if ($name) {
+                    $playlist->setName($name);
+                    $this->em->flush();
+                    return new Response('', 204);
+                } elseif (is_int($from) && is_int($to)) {
+                    return $this->movePlaylistItem($playlist, $from, $to);
+                }
+
+                throw new BadRequestException('name must be specified, or from and to must be specified');
                 break;
             case 'DELETE':
                 return $this->deletePlaylist($playlist);
@@ -99,7 +114,9 @@ class PlaylistController extends AbstractController
 
         foreach ($playlists as $pl) {
             $embed = new HalJson();
-            $embed->set('name', $pl->getName())
+            $embed
+                ->set('uuid', $pl->getUuid())
+                ->set('name', $pl->getName())
                 ->set('itemCount', $pl->getItems()->count())
                 ->link('self', $this->generateUrl(
                     'showPlaylist',
@@ -109,7 +126,7 @@ class PlaylistController extends AbstractController
             $embeds[] = $embed;
         }
 
-        $hj->embedArray('items', $embeds);
+        $hj->embedArray('playlists', $embeds);
 
         return $this->json($hj);
     }
@@ -139,6 +156,7 @@ class PlaylistController extends AbstractController
 
         $playlistJson = $this->hjf->createCollection('items', $contents);
         $playlistJson
+            ->set('uuid', $pl->getUuid())
             ->set('name', $pl->getName())
             ->set('itemCount', $pl->getItems()->count())
             ->link('self', $this->generateUrl(
@@ -202,6 +220,21 @@ class PlaylistController extends AbstractController
         $this->em->remove($item);
         $this->em->flush();
 
+        return new Response('', 204);
+    }
+
+    public function movePlaylistItem(Playlist $pl, int $from, int $to): Response
+    {
+        $item = $this->pir->findOneBy(['sort' => $from]);
+
+        if (!$item) {
+            throw $this->createNotFoundException('The index does not exist in this playlist');
+        }
+
+        $pl->removeItem($item);
+        $pl->insertItem($item, $to);
+
+        $this->em->flush();
         return new Response('', 204);
     }
 }

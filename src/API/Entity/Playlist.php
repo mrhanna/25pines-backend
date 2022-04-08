@@ -81,15 +81,15 @@ class Playlist
                 if ($index === -1 || $index === $numItems) {
                     $item->setSort($numItems);
                 } else {
-                    $item->setSort($index);
-
                     // increment sort for higher sorted items
                     $higherSortCriteria = Criteria::create()
-                        ->andWhere(new Comparison('sort', '>', $index));
+                        ->andWhere(new Comparison('sort', '>=', $index));
 
                     foreach ($this->items->matching($higherSortCriteria) as $item) {
-                        $item->setSort($item->getSort + 1);
+                        $item->setSort($item->getSort() + 1);
                     }
+
+                    $item->setSort($index);
                 }
             } else {
                 // index was invalid
@@ -111,7 +111,7 @@ class Playlist
                 ->andWhere(new Comparison('sort', '>', $index));
 
             foreach ($this->items->matching($higherSortCriteria) as $item) {
-                $item->setSort($item->getSort - 1);
+                $item->setSort($item->getSort() - 1);
             }
             // set the owning side to null (unless already changed)
             if ($item->getPlaylist() === $this) {
