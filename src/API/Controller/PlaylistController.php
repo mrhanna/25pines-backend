@@ -79,25 +79,27 @@ class PlaylistController extends AbstractController
                     return $this->addToPlaylist($playlist, $content);
                 } else if ($index !== null) {
                     return $this->removeFromPlaylist($playlist, $index);
-                } else {
-                    throw new BadRequestException('index and/or mediaUuid must be specified');
                 }
 
+                throw new BadRequestException('index and/or mediaUuid must be specified');
                 break;
             case 'PATCH':
                 $name = $req->request->get('name');
-                $from = $req->request->get('from');
-                $to = $req->request->get('to');
+                // $from = $req->request->get('from');
+                // $to = $req->request->get('to');
+                $sortMap = $req->request->all('sortMap');
 
                 if ($name) {
                     $playlist->setName($name);
                     $this->em->flush();
                     return new Response('', 204);
-                } elseif (is_int($from) && is_int($to)) {
-                    return $this->movePlaylistItem($playlist, $from, $to);
+                // } elseif (is_int($from) && is_int($to) && $from !== $to) {
+                //     return $this->movePlaylistItem($playlist, $from, $to);
+                } elseif ($sortMap) {
+                    return $this->reorderPlaylist($playlist, $sortMap);
                 }
 
-                throw new BadRequestException('name must be specified, or from and to must be specified');
+                throw new BadRequestException('name must be specified, or sortMap must be specified');
                 break;
             case 'DELETE':
                 return $this->deletePlaylist($playlist);
@@ -223,16 +225,46 @@ class PlaylistController extends AbstractController
         return new Response('', 204);
     }
 
-    public function movePlaylistItem(Playlist $pl, int $from, int $to): Response
-    {
-        $item = $this->pir->findOneBy(['sort' => $from]);
+    // public function movePlaylistItem(Playlist $pl, int $from, int $to): Response
+    // {
+    //     $item = $this->pir->findOneBy(['sort' => $from]);
+    //
+    //     if (!$item) {
+    //         throw $this->createNotFoundException('The index does not exist in this playlist');
+    //     }
+    //
+    //     $pl->removeItem($item);
+    //     $pl->insertItem($item, $to);
+    //
+    //     $this->em->flush();
+    //     return new Response('', 204);
+    // }
 
-        if (!$item) {
-            throw $this->createNotFoundException('The index does not exist in this playlist');
+    public function reorderPlaylist(Playlist $pl, array $sortMap): Response
+    {
+        $count = count($sortMap);
+        // validate the map
+        if ($count !== count($pl->getItems())) {
+            throw new BadRequestException('sortMap length does not match item count');
         }
 
-        $pl->removeItem($item);
-        $pl->insertItem($item, $to);
+        $has = array_fill(0, $count, false);
+
+        foreach ($sortMap as $index) {
+            if ($index >= $count || $index < 0) {
+                throw new BadRequestException('The index ' . $index . ' is out of bounds');
+            }
+
+            if ($has[$index]) {
+                throw new BadRequestException('The index ' . $index . ' was reused.');
+            }
+
+            $has[$index] = true;
+        }
+
+        for ($i = 0; $i < $count; $i++) {
+            $pl->getItems()->get($i)->setSort($sortMap[$i]);
+        }
 
         $this->em->flush();
         return new Response('', 204);
