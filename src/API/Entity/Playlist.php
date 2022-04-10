@@ -9,6 +9,7 @@ use Doctrine\Common\Collections\Criteria;
 use Doctrine\Common\Collections\Expr\Comparison;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: PlaylistRepository::class)]
 class Playlist
@@ -27,10 +28,15 @@ class Playlist
     #[ORM\OneToMany(mappedBy: 'playlist', targetEntity: PlaylistItem::class, orphanRemoval: true)]
     private $items;
 
+    #[ORM\Column(type: 'string', length: 13)]
+    #[Assert\Choice(['off', 'manual', 'most_recent', 'chronological', 'most_popular'])]
+    private $rokuCategorySetting;
+
     public function __construct()
     {
         $this->uuid = Uuid::v4();
         $this->items = new ArrayCollection();
+        $this->rokuCategorySetting = 'off';
     }
 
     public function getId(): ?int
@@ -130,6 +136,18 @@ class Playlist
     public function setUuid(string $uuid): self
     {
         $this->uuid = $uuid;
+
+        return $this;
+    }
+
+    public function getRokuCategorySetting(): ?string
+    {
+        return $this->rokuCategorySetting;
+    }
+
+    public function setRokuCategorySetting(string $rokuCategorySetting): self
+    {
+        $this->rokuCategorySetting = $rokuCategorySetting;
 
         return $this;
     }

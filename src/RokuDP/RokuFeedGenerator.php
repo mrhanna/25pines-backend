@@ -8,8 +8,11 @@ use App\API\Entity\Episode;
 use App\API\Entity\Series;
 use App\API\Entity\Tag;
 use App\API\Entity\Video;
+use App\API\Repository\PlaylistRepository;
 use App\API\Repository\SeriesRepository;
 use App\API\Repository\StreamableContentRepository;
+use App\Image\ImageGenerator;
+use Doctrine\Common\Collections\Criteria;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -20,13 +23,25 @@ class RokuFeedGenerator extends AbstractController
         'educational', 'fantasy', 'faith', 'food', 'fashion', 'gaming', 'health', 'history', 'horror', 'miniseries', 'mystery', 'nature',
         'news', 'reality', 'romance', 'science', 'sciencefiction', 'sitcom', 'special', 'sports', 'thriller', 'technology'];
 
+    private $ig;
+
+    public function __construct(ImageGenerator $ig)
+    {
+        $this->ig = $ig;
+    }
+
     #[Route('/feed.json', name: 'generateRokuFeed', methods: ['GET'])]
-    public function generateRokuFeed(StreamableContentRepository $scr, SeriesRepository $sr): Response
+    public function generateRokuFeed(StreamableContentRepository $scr, SeriesRepository $sr, PlaylistRepository $pr): Response
     {
         $movies             = $scr->findBy(['mediaType' => 'movie']);
         $series             = $sr->findAll();
         $shortFormVideos    = $scr->findBy(['mediaType' => 'shortFormVideo']);
         $tvSpecials         = $scr->findBy(['mediaType' => 'tvSpecial']);
+
+        $plcrit = new Criteria();
+        $plcrit->andWhere($plcrit->expr()->neq('rokuCategorySetting', 'off'));
+
+        $playlists          = $pr->matching($plcrit);
 
         // TODO: decouple this, store in database?
         $feed = [
@@ -35,12 +50,34 @@ class RokuFeedGenerator extends AbstractController
             'language' => 'en-US',
         ];
 
+        self::prepareCategories($feed, $playlists);
         self::prepareContent($feed, 'movies', $movies);
         self::prepareContent($feed, 'series', $series);
         self::prepareContent($feed, 'shortFormVideos', $shortFormVideos);
         self::prepareContent($feed, 'tvSpecials', $tvSpecials);
 
         return $this->json($feed);
+    }
+
+    private function prepareCategories(array &$feed, $playlists): void
+    {
+        foreach ($playlists as $pl) {
+            $json['name'] = $pl->getName();
+            $json['itemIds'] = [];
+
+            foreach ($pl->getItems() as $item) {
+                $json['itemIds'][] = $item->getContent()->getUuid();
+            }
+
+            if (count($json['itemIds']) > 0) {
+                $feed['playlists'][] = $json;
+                $feed['categories'][] = [
+                    'name' => $pl->getName(),
+                    'playlistName' => $pl->getName(),
+                    'order' => $pl->getRokuCategorySetting(),
+                ];
+            }
+        }
     }
 
     private function prepareContent(array &$feed, string $name, $collection): void
@@ -55,9 +92,12 @@ class RokuFeedGenerator extends AbstractController
 
     private function prepareContentParent(AbstractContent $ac): array
     {
+        $thumbnail = $ac->getThumbnail()?->getName();
+        $thumbnailUrl = $thumbnail ? $this->ig->toUrl($thumbnail, 800, 450) : null;
+
         $r['id']                = $ac->getUuid();
         $r['title']             = $ac->getTitle();
-        $r['thumbnail']         = $ac->getThumbnail();
+        $r['thumbnail']         = $thumbnailUrl;
         $r['releaseDate']       = $ac->getReleaseDate()->format(\DateTimeInterface::ISO8601);
         $r['shortDescription']  = $ac->getShortDescription();
         $r['longDescription']   = $ac->getLongDescription();

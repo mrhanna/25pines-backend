@@ -15,6 +15,8 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Validator\Exception\ValidationFailedException;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class PlaylistController extends AbstractController
 {
@@ -23,19 +25,22 @@ class PlaylistController extends AbstractController
     private HalJsonFactory $hjf;
     private PlaylistRepository $pr;
     private PlaylistItemRepository $pir;
+    private ValidatorInterface $vi;
 
     public function __construct(
         AbstractContentRepository $acr,
         HalJsonFactory $hjf,
         ManagerRegistry $doctrine,
         PlaylistRepository $pr,
-        PlaylistItemRepository $pir
+        PlaylistItemRepository $pir,
+        ValidatorInterface $vi
     ) {
         $this->acr = $acr;
         $this->em = $doctrine->getManager();
         $this->hjf = $hjf;
         $this->pr = $pr;
         $this->pir = $pir;
+        $this->vi = $vi;
     }
 
     #[Route('/playlists', name: 'showPlaylists', methods: ['GET', 'POST'])]
@@ -46,13 +51,7 @@ class PlaylistController extends AbstractController
                 return $this->readAllPlaylists();
                 break;
             case 'POST':
-                $name = $req->request->get('name');
-
-                if (!$name) {
-                    throw new BadRequestException('name must be specified');
-                }
-
-                return $this->createPlaylist($name);
+                return $this->createPlaylist($req);
                 break;
         }
     }
@@ -84,29 +83,14 @@ class PlaylistController extends AbstractController
                 throw new BadRequestException('index and/or mediaUuid must be specified');
                 break;
             case 'PATCH':
-                $name = $req->request->get('name');
-                // $from = $req->request->get('from');
-                // $to = $req->request->get('to');
-                $sortMap = $req->request->all('sortMap');
-
-                if ($name) {
-                    $playlist->setName($name);
-                    $this->em->flush();
-                    return new Response('', 204);
-                // } elseif (is_int($from) && is_int($to) && $from !== $to) {
-                //     return $this->movePlaylistItem($playlist, $from, $to);
-                } elseif ($sortMap) {
-                    return $this->reorderPlaylist($playlist, $sortMap);
-                }
-
-                throw new BadRequestException('name must be specified, or sortMap must be specified');
+                return $this->updatePlaylist($playlist, $req);
                 break;
             case 'DELETE':
                 return $this->deletePlaylist($playlist);
         }
     }
 
-    public function readAllPlaylists(): Response
+    private function readAllPlaylists(): Response
     {
         $playlists = $this->pr->findAll();
 
@@ -120,6 +104,7 @@ class PlaylistController extends AbstractController
                 ->set('uuid', $pl->getUuid())
                 ->set('name', $pl->getName())
                 ->set('itemCount', $pl->getItems()->count())
+                ->set('rokuCategorySetting', $pl->getRokuCategorySetting())
                 ->link('self', $this->generateUrl(
                     'showPlaylist',
                     ['uuid' => $pl->getUuid()],
@@ -133,10 +118,23 @@ class PlaylistController extends AbstractController
         return $this->json($hj);
     }
 
-    public function createPlaylist(string $name): Response
+    private function createPlaylist(Request $req): Response
     {
+        $name = $req->request->get('name');
+
+        if (!$name) {
+            throw new BadRequestException('name must be specified');
+        }
+
         $pl = new Playlist();
         $pl->setName($name);
+        $pl->setRokuCategorySetting($req->request->get('rokuCategorySetting') ?? 'off');
+
+        $errors = $this->vi->validate($pl);
+
+        if (count($errors) > 0) {
+            throw new ValidationFailedException('', errors);
+        }
 
         $this->em->persist($pl);
         $this->em->flush();
@@ -148,7 +146,7 @@ class PlaylistController extends AbstractController
         );
     }
 
-    public function readPlaylist(Playlist $pl): Response
+    private function readPlaylist(Playlist $pl): Response
     {
         $contents = [];
 
@@ -161,6 +159,7 @@ class PlaylistController extends AbstractController
             ->set('uuid', $pl->getUuid())
             ->set('name', $pl->getName())
             ->set('itemCount', $pl->getItems()->count())
+            ->set('rokuCategorySetting', $pl->getRokuCategorySetting())
             ->link('self', $this->generateUrl(
                 'showPlaylist',
                 ['uuid' => $pl->getUuid()],
@@ -171,7 +170,7 @@ class PlaylistController extends AbstractController
         return $this->json($playlistJson);
     }
 
-    public function deletePlaylist(Playlist $pl): Response
+    private function deletePlaylist(Playlist $pl): Response
     {
         $this->em->remove($pl);
         $this->em->flush();
@@ -179,12 +178,12 @@ class PlaylistController extends AbstractController
         return new Response('', 204);
     }
 
-    public function addToPlaylist(Playlist $pl, string $contentUuid): Response
+    private function addToPlaylist(Playlist $pl, string $contentUuid): Response
     {
         return $this->insertIntoPlaylist($pl, $contentUuid, -1);
     }
 
-    public function insertIntoPlaylist(Playlist $pl, string $contentUuid, int $index = -1): Response
+    private function insertIntoPlaylist(Playlist $pl, string $contentUuid, int $index = -1): Response
     {
         $content = $this->acr->findOneBy(['uuid' => $contentUuid]);
 
@@ -207,7 +206,7 @@ class PlaylistController extends AbstractController
         return new Response('', 204);
     }
 
-    public function removeFromPlaylist(Playlist $pl, int $index): Response
+    private function removeFromPlaylist(Playlist $pl, int $index): Response
     {
         $item = $this->pir->findOneBy([
             'sort' => $index,
@@ -240,7 +239,37 @@ class PlaylistController extends AbstractController
     //     return new Response('', 204);
     // }
 
-    public function reorderPlaylist(Playlist $pl, array $sortMap): Response
+    private function updatePlaylist(Playlist $pl, Request $req): Response
+    {
+        $name = $req->request->get('name');
+        $rokuCategorySetting = $req->request->get('rokuCategorySetting');
+        $sortMap = $req->request->all('sortMap');
+
+        if ($sortMap) {
+            return $this->reorderPlaylist($pl, $sortMap);
+        } elseif (!$name && !$rokuCategorySetting) {
+            throw new BadRequestException('prop change must be specified, or sortMap must be specified');
+        }
+
+        if ($name) {
+            $pl->setName($name);
+        }
+
+        if ($rokuCategorySetting) {
+            $pl->setRokuCategorySetting($rokuCategorySetting);
+        }
+
+        $errors = $this->vi->validate($pl);
+
+        if (count($errors) > 0) {
+            throw new ValidationFailedException('', errors);
+        }
+
+        $this->em->flush();
+        return new Response('', 204);
+    }
+
+    private function reorderPlaylist(Playlist $pl, array $sortMap): Response
     {
         $count = count($sortMap);
         // validate the map
