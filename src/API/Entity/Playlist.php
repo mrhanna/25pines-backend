@@ -72,41 +72,10 @@ class Playlist implements SortableInterface
 
     public function addItem(PlaylistItem $item): self
     {
-        $this->insertItem($item, -1);
-
-        return $this;
-    }
-
-    public function insertItem(PlaylistItem $item, int $index = -1): self
-    {
         if (!$this->items->contains($item)) {
-            $numItems = $this->items->count();
-
-            // if index is valid
-            if ($index >= -1 && $index <= $numItems) {
-                $this->items[] = $item;
-                $item->setPlaylist($this);
-
-                // append or insert
-                if ($index === -1 || $index === $numItems) {
-                    $item->setSort($numItems);
-                } else {
-                    // increment sort for higher sorted items
-                    $higherSortCriteria = Criteria::create()
-                        ->andWhere(new Comparison('sort', '>=', $index));
-
-                    foreach ($this->items->matching($higherSortCriteria) as $item) {
-                        $item->setSort($item->getSort() + 1);
-                    }
-
-                    $item->setSort($index);
-                }
-            } else {
-                // index was invalid
-                throw new \InvalidArgumentException('index out of bounds');
-            }
+            $item->setPlaylist($this);
+            $item->setSort($this->items->count());
         }
-
 
         return $this;
     }

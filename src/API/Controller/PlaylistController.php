@@ -181,11 +181,6 @@ class PlaylistController extends AbstractController
 
     private function addToPlaylist(Playlist $pl, string $contentUuid): Response
     {
-        return $this->insertIntoPlaylist($pl, $contentUuid, -1);
-    }
-
-    private function insertIntoPlaylist(Playlist $pl, string $contentUuid, int $index = -1): Response
-    {
         $content = $this->acr->findOneBy(['uuid' => $contentUuid]);
 
         if (!$content) {
@@ -194,12 +189,7 @@ class PlaylistController extends AbstractController
 
         $playlistItem = new PlaylistItem();
         $playlistItem->setContent($content);
-
-        try {
-            $pl->insertItem($playlistItem, $index);
-        } catch (\InvalidArgumentException $e) {
-            throw new BadRequestException($e->getMessage());
-        }
+        $pl->addItem($playlistItem);
 
         $this->em->persist($playlistItem);
         $this->em->flush();
@@ -224,21 +214,6 @@ class PlaylistController extends AbstractController
 
         return new Response('', 204);
     }
-
-    // public function movePlaylistItem(Playlist $pl, int $from, int $to): Response
-    // {
-    //     $item = $this->pir->findOneBy(['sort' => $from]);
-    //
-    //     if (!$item) {
-    //         throw $this->createNotFoundException('The index does not exist in this playlist');
-    //     }
-    //
-    //     $pl->removeItem($item);
-    //     $pl->insertItem($item, $to);
-    //
-    //     $this->em->flush();
-    //     return new Response('', 204);
-    // }
 
     private function updatePlaylist(Playlist $pl, Request $req): Response
     {
