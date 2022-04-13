@@ -9,6 +9,7 @@ use App\API\Repository\PlaylistRepository;
 use App\API\Repository\PlaylistItemRepository;
 use App\API\Utility\HalJson;
 use App\API\Utility\HalJsonFactory;
+use App\API\Utility\SortMapService;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -271,28 +272,10 @@ class PlaylistController extends AbstractController
 
     private function reorderPlaylist(Playlist $pl, array $sortMap): Response
     {
-        $count = count($sortMap);
-        // validate the map
-        if ($count !== count($pl->getItems())) {
-            throw new BadRequestException('sortMap length does not match item count');
-        }
-
-        $has = array_fill(0, $count, false);
-
-        foreach ($sortMap as $index) {
-            if ($index >= $count || $index < 0) {
-                throw new BadRequestException('The index ' . $index . ' is out of bounds');
-            }
-
-            if ($has[$index]) {
-                throw new BadRequestException('The index ' . $index . ' was reused.');
-            }
-
-            $has[$index] = true;
-        }
-
-        for ($i = 0; $i < $count; $i++) {
-            $pl->getItems()->get($i)->setSort($sortMap[$i]);
+        try {
+            SortMapService::applySortMapToCollection($sortMap, $pl->getItems());
+        } catch (Exception $e) {
+            throw new BadRequestException($e->getMessage());
         }
 
         $this->em->flush();

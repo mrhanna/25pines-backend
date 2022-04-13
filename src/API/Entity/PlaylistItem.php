@@ -2,19 +2,20 @@
 
 namespace App\API\Entity;
 
+use App\API\Entity\Traits\SortableInterface;
+use App\API\Entity\Traits\SortableTrait;
 use App\API\Repository\PlaylistItemRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: PlaylistItemRepository::class)]
-class PlaylistItem
+class PlaylistItem implements SortableInterface
 {
+    use SortableTrait;
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
     private $id;
-
-    #[ORM\Column(type: 'integer')]
-    private $sort;
 
     #[ORM\ManyToOne(targetEntity: Playlist::class, inversedBy: 'items')]
     #[ORM\JoinColumn(nullable: false)]
@@ -27,18 +28,6 @@ class PlaylistItem
     public function getId(): ?int
     {
         return $this->id;
-    }
-
-    public function getSort(): ?int
-    {
-        return $this->sort;
-    }
-
-    public function setSort(int $sort): self
-    {
-        $this->sort = $sort;
-
-        return $this;
     }
 
     public function getPlaylist(): ?Playlist

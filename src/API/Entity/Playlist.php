@@ -2,6 +2,8 @@
 
 namespace App\API\Entity;
 
+use App\API\Entity\Traits\SortableInterface;
+use App\API\Entity\Traits\SortableTrait;
 use App\API\Repository\PlaylistRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -12,8 +14,10 @@ use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: PlaylistRepository::class)]
-class Playlist
+class Playlist implements SortableInterface
 {
+    use SortableTrait;
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
@@ -28,7 +32,7 @@ class Playlist
     #[ORM\OneToMany(mappedBy: 'playlist', targetEntity: PlaylistItem::class, orphanRemoval: true)]
     private $items;
 
-    #[ORM\Column(type: 'string', length: 13)]
+    #[ORM\Column(type: 'string', length: 13, options: ['default' => 'off'])]
     #[Assert\Choice(['off', 'manual', 'most_recent', 'chronological', 'most_popular'])]
     private $rokuCategorySetting;
 
