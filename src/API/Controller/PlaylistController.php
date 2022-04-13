@@ -9,7 +9,7 @@ use App\API\Repository\PlaylistRepository;
 use App\API\Repository\PlaylistItemRepository;
 use App\API\Utility\HalJson;
 use App\API\Utility\HalJsonFactory;
-use App\API\Utility\SortMapService;
+use App\API\Utility\SortService;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -129,6 +129,7 @@ class PlaylistController extends AbstractController
 
         $pl = new Playlist();
         $pl->setName($name);
+        $pl->setSort($this->pr->count([]));
         $pl->setRokuCategorySetting($req->request->get('rokuCategorySetting') ?? 'off');
 
         $errors = $this->vi->validate($pl);
@@ -174,6 +175,7 @@ class PlaylistController extends AbstractController
     private function deletePlaylist(Playlist $pl): Response
     {
         $this->em->remove($pl);
+        SortService::removeIndexFromCollection($pl->getSort(), $this->pr);
         $this->em->flush();
 
         return new Response('', 204);
@@ -248,7 +250,7 @@ class PlaylistController extends AbstractController
     private function reorderPlaylist(Playlist $pl, array $sortMap): Response
     {
         try {
-            SortMapService::applySortMapToCollection($sortMap, $pl->getItems());
+            SortService::applySortMapToCollection($sortMap, $pl->getItems());
         } catch (Exception $e) {
             throw new BadRequestException($e->getMessage());
         }

@@ -5,10 +5,10 @@ namespace App\API\Entity;
 use App\API\Entity\Traits\SortableInterface;
 use App\API\Entity\Traits\SortableTrait;
 use App\API\Repository\PlaylistRepository;
+use App\API\Utility\SortService;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\Criteria;
-use Doctrine\Common\Collections\Expr\Comparison;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -83,15 +83,7 @@ class Playlist implements SortableInterface
     public function removeItem(PlaylistItem $item): self
     {
         if ($this->items->removeElement($item)) {
-            $index = $item->getSort();
-
-            // decrement sort for higher sorted items
-            $higherSortCriteria = Criteria::create()
-                ->andWhere(new Comparison('sort', '>', $index));
-
-            foreach ($this->items->matching($higherSortCriteria) as $item) {
-                $item->setSort($item->getSort() - 1);
-            }
+            SortService::removeIndexFromCollection($item->getSort(), $this->items);
             // set the owning side to null (unless already changed)
             if ($item->getPlaylist() === $this) {
                 $item->setPlaylist(null);

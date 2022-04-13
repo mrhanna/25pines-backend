@@ -2,7 +2,11 @@
 
 namespace App\API\Utility;
 
-class SortMapService
+use Doctrine\Common\Collections\Criteria;
+use Doctrine\Common\Collections\Selectable;
+use Doctrine\Common\Collections\Expr\Comparison;
+
+class SortService
 {
     public static function applySortMapToCollection(array $sortMap, \Traversable $collection): void
     {
@@ -30,6 +34,21 @@ class SortMapService
         foreach ($collection as $item) {
             $item->setSort($sortMap[$i]);
             $i++;
+        }
+    }
+
+    public static function removeIndexFromCollection(int $index, Selectable $collection): void
+    {
+        if ($index < 0) {
+            throw new \InvalidArgumentException('index is out of bounds');
+        }
+
+        // decrement sort for higher sorted items
+        $higherSortCriteria = Criteria::create()
+            ->andWhere(new Comparison('sort', '>', $index));
+
+        foreach ($collection->matching($higherSortCriteria) as $item) {
+            $item->setSort($item->getSort() - 1);
         }
     }
 }
